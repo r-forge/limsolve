@@ -6,9 +6,9 @@
  
  The monte carlo method produces a sample solution for 
  \deqn{Ex=f}
- \deqn{Ax~=B}
+ \deqn{Ax\sim=B}
  \deqn{Gx>=h}
- where Ex=F have to be met exactly, and Ax=B approximately.}
+ where Ex=F have to be met exactly, and Ax$\sim$=B approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
 G=NULL, H=NULL, sdB=1, iter=3000, type = "mirror", 
 jmp = 0.1, tol=sqrt(.Machine$double.eps), 
@@ -32,7 +32,7 @@ x0=NULL, fulloutput = FALSE)}
   a list containing:
   \item{X }{matrix whose rows contain the sampled values of x}
   \item{acceptedratio }{ratio of acceptance (i.e. the ratio of the accepted runs / total iterations)}
-  \item{p }{probability vector for all samples (e.g. one value for each row of \code{X})}
+  \item{p }{only outputted if fulloutput is TRUE: probability vector for all samples (e.g. one value for each row of \code{X})}
   \item{Q }{only outputted if fulloutput is TRUE: the transformed samples Q}
 }
 \author{Karel Van den Meersche<k.vdMeersche@nioo.knaw.nl>
@@ -74,12 +74,12 @@ pairs(xsample(A=A,B=B,E=E,F=F,G=G,H=H,iter=1000)$X,
   connecting the old sample and the intersection with the planes defined by the inequality constraints.
   \item the \code{cda} algorithm is similar, except that the direction is chosen along one of the coordinate axes.  
   \item the \code{mirror} algorithm is unpublished; it uses the inequality constraints as "reflecting planes" along which jumps are reflected.
-\cr In contrast to \code{cda} and \code{rda}, this algorithm also works with unbounded problems (i.e. for which some of the unknowns can attain Inf.
+\cr In contrast to \code{cda} and \code{rda}, this algorithm also works with unbounded problems (i.e. for which some of the unknowns can attain Inf).
 
 For more information, see \file{xsamplevignette.pdf} in the packages \file{docs} subdirectory. 
   
   \item Raftery and Lewis (1996) suggest a minimum of 3000 iterations to reach the extremes 
-  \item If provided, then \code{p} should be a valid particular solution, else the algorithm will fail.
+  \item If provided, then \code{p} should be a valid particular solution (i.e. Ex=b and G>=h), else the algorithm will fail.
   \item If the particular solution (\code{x0}) is not provided, then the parsimonious solution is sought, see \code{\link{ldei}}. 
   For underdetermined systems, this may not be the most efficient way to start the algorithm}
 \keyword{algebra}

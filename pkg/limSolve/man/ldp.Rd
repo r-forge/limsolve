@@ -21,7 +21,7 @@
   \item{type }{the string "ldp", such that how the solution was obtained can be traced}
 }
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
-\examples{# parsimonious (simplest) solution of mink diet problem
+\examples{# parsimonious (simplest) solution
 G <- matrix(nr=2,nc=2,data=c(3,2,2,4))
 H <- c(3,2)
 

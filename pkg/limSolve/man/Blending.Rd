@@ -3,7 +3,7 @@
 \alias{Blending}
 \title{A linear inverse blending problem}
 \description{A manufacturer produces a feeding mix for pet animals. 
-\cr The feed mix contains two nutritive ingredients and ane ingredient (filler) to provide bulk. 
+\cr The feed mix contains two nutritive ingredients and one ingredient (filler) to provide bulk. 
 \cr One kg of feed mix must contain a minimum quantity of each of four nutrients as below: 
 
        \tabular{rlllll}{
@@ -38,7 +38,7 @@ The \code{equality} ensures that the sum of the three fractions equals 1:
  \deqn{1 = x_1+x_2+x_3}
 
 And the \code{inequalities} enforce the nutritional constraints:
- \deqn{100*x_1+200*x_2>90}
+ \deqn{100*x_1+200*x_2>80}
  \deqn{50*x_1+150*x_2>50}
  and so on
  
