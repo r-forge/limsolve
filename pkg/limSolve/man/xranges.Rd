@@ -18,10 +18,10 @@
   a 2-column matrix with the minimum and maximum value of each \code{x}
 }
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
-\examples{# Estimate the ranges in the diet composition of Mink
+\examples{# Estimate the ranges in the Diet Composition of Mink
 A <- rbind(Minkdiet$Prey,rep(1,7))
 B <- c(Minkdiet$Mink,1)
-(iso<-xranges(A,B))}
+(DC<-xranges(A,B))}
 \seealso{\code{\link{varranges}}, 
 \cr \code{\link[lpSolve]{lp}}: linear programming from package lpSolve}
 \note{we have experienced that \code{lpSolve} sometimes fails (and \R stops) if it is frequently repeated, and for small problems.}

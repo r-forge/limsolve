@@ -36,7 +36,7 @@ The input data consist of:
 
 Based on these data, the algal composition of the field sample is estimated, 
 under the assumption that the pigment composition of the field sample is a weighted avertage of the pigment
-composition of algae present in the sample, where weighing is proportional to their biomass.
+composition of algae present in the sample, where weighting is proportional to their biomass.
 
 As there are more measurements (12 pigments) than unknowns (8 algae), the resulting linear system is overdetermined.
 \cr It is thus solved in a least squares sense (using function \code{lsei}):

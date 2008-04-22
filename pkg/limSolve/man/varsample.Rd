@@ -3,7 +3,7 @@
 \title{samples variables of linear inverse problems}
 \description{Uses random samples of an under- or overdetermined linear problem to estimate the distribution of equations
 
-Based on a random sample of x (e.g. produced with \code{\link{xsample}}, produces the corresponding set of 
+Based on a random sample of x (e.g. produced with \code{\link{xsample}}), produces the corresponding set of 
 inverse "variables" described by the linear equations 
 
 \deqn{Var = EqA.x+EqB}}
@@ -30,11 +30,12 @@ VarA <- matrix(nc=7, byrow=TRUE,data=c(
         0, 1, 1, 1, 0, 1, 0,   # invertebrates  
         1, 0, 0, 0, 1, 0, 1))  # vertebrates
 
-# first sample the 
+# first sample the Minkdiet problem
 E <- rbind(Minkdiet$Prey,rep(1,7))
 F <- c(Minkdiet$Mink,1)
 X <- xsample(E=E,F=F,G=diag(7),H=rep(0,7),iter=1000)$X
 
+#then determine Diet Composition in terms of vertebrate and invertebrate food
 DC <- varsample(X=X,EqA=VarA)
 hist(DC[,1],freq=FALSE,xlab="fraction",
 main="invertebrate food in Mink diet",col="lightblue")}
