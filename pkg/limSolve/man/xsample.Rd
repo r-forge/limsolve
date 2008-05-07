@@ -6,15 +6,16 @@
  
  The monte carlo method produces a sample solution for 
  \deqn{Ex=f}
- \deqn{Ax\sim=B}
+ \deqn{Ax\simeq B}
  \deqn{Gx>=h}
- where Ex=F have to be met exactly, and Ax$\sim$=B approximately.}
+ where Ex=F have to be met exactly, and \eqn{Ax\simeq B} approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
 G=NULL, H=NULL, sdB=1, iter=3000, type = "mirror", 
 jmp = 0.1, tol=sqrt(.Machine$double.eps), 
 x0=NULL, fulloutput = FALSE)}
 \arguments{
-  \item{A }{numeric matrix containing the coefficients of the (approximate) equality constraints, \eqn{Ax~=B}}
+  \item{A }{numeric matrix containing the coefficients of the
+    (approximate) equality constraints, \eqn{Ax\simeq B}}
   \item{B }{numeric vector containing the right-hand side of the (approximate) equality constraints}
   \item{E }{numeric matrix containing the coefficients of the (exact) equality constraints, \eqn{Ex=F}}
   \item{F }{numeric vector containing the right-hand side of the (exact) equality constraints}
@@ -23,7 +24,7 @@ x0=NULL, fulloutput = FALSE)}
   \item{sdB }{vector with standard deviation on B, used for weighing; default = equal weights}
   \item{iter }{integer determining the number of iterations}
   \item{type }{type of algorithm: one of: "mirror", (mirroring algorithm), "rda" (random directions algorithm) or "cda" (coordinates directions algorithm)}
-  \item{jmp }{jump length of the transformed variables q: \eqn{x=p+Zq} (only if \code{type}=="mirror")}
+  \item{jmp }{jump length of the transformed variables q: \eqn{x=x0+Zq} (only if \code{type}=="mirror")}
   \item{tol }{tolerance for equality and inequality constraints; numbers whose absolute value is smaller than \code{tol} are set to zero}
   \item{x0 }{initial (particular) solution}
   \item{fulloutput }{if TRUE, also outputs the transformed variables q}

@@ -870,7 +870,7 @@ xsample <- function(A=NULL,             #Ax~=B
                     sdB=1,              #standard deviations on B (weighting)
                     iter=3000,          #number of iterations
                     type="mirror", # one of mirror, cda, da ; cda and da need to have a closed space (inequality constraints)!!
-                    jmp=.1,             #jump length of the transformed variables q: x=p+Zq (only if type=mirror)
+                    jmp=.1,             #jump length of the transformed variables q: x=x0+Zq (only if type=mirror)
                     tol=sqrt(.Machine$double.eps), # accuracy of Z,g,h: smaller numbers are set to zero to avoid rounding errors
                     x0=NULL,             #particular solution
                     fulloutput=FALSE)   # provide diagnostic output such as the transformed variables q,
