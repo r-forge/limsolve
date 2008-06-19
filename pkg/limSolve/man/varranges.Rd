@@ -10,7 +10,8 @@
  finds the minimum and maximum values of the variables
   by successively minimising and maximising each variable equation
  \cr uses linear programming function lpSolve (see note)}
-\usage{varranges(E=NULL, F=NULL, G=NULL, H=NULL, EqA, EqB=NULL)}
+\usage{varranges(E=NULL, F=NULL, G=NULL, H=NULL, EqA, EqB=NULL, 
+       ispos=FALSE, tol=1e-8)}
 \arguments{
   \item{E }{numeric matrix containing the coefficients of the equalities \eqn{Ex=F}}
   \item{F }{numeric vector containing the right-hand side of the equalities}
@@ -18,6 +19,8 @@
   \item{H }{numeric vector containing the right-hand side of the inequalities}
   \item{EqA }{numeric matrix containing the coefficients that define the variable equations}
   \item{EqB }{numeric vector containing the right-hand side of the variable equations}
+  \item{ispos }{if TRUE, it is imposed that unknowns are positive quantities}
+  \item{tol }{tolerance for equality and inequality constraints}
 }
 \value{
   a 2-column matrix with the minimum and maximum value of each equation (variable)
@@ -27,8 +30,10 @@
 
 A <- rbind(Minkdiet$Prey,rep(1,7))
 B <- c(Minkdiet$Mink,1)
-EqA   <- c(0,0,1,1,1,0,0)            # sum of food 3,4,5
-(isoA<-varranges(A,B,EqA=EqA))        # ranges of part of food 3+4+5}
+EqA   <- c(0,0,1,1,1,0,0)                 # sum of food 3,4,5
+(isoA<-varranges(A,B,EqA=EqA,ispos=TRUE)) # ranges of part of food 3+4+5
+varranges(A,B,EqA=EqA,G=diag(7),H=rep(0,7)) 
+}
 \seealso{\code{\link{xranges}}, 
 \cr \code{\link[lpSolve]{lp}}: linear programming from package lpSolve}
 \note{we have experienced that \code{lpSolve} sometimes fails (and \R stops) if it is frequently repeated, and for small problems.}

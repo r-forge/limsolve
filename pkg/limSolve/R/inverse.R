@@ -629,15 +629,8 @@ resolution <- function (s,              # either matrix or its singular value de
 }
 
 
-################################################################################
-## xranges     : Calculates ranges of inverse unknowns                        ##
-################################################################################
-
-xranges <- function(E=NULL, # numeric matrix containing the coefficients of the equaliies Ex=F
-                    F=NULL, # numeric vector containing the right-hand side of the equalities
-                    G=NULL, # numeric matrix containing the coefficients of the inequalities G*X>=H
-                    H=NULL) # numeric vector containing the right-hand side of the inequalities
-
+xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL, 
+          ispos=FALSE, tol = 1e-8)
 #------------------------------------------------------------------------
 # Given the linear constraints
 #                        E*X=F 
@@ -646,53 +639,81 @@ xranges <- function(E=NULL, # numeric matrix containing the coefficients of the 
 # finds the minimum and maximum values of all elements of vector X 
 # by successively minimising and maximising each x, using linear programming
 # uses lpSolve - may fail (if frequently repeated)                       
+# unknowns can possibly be negative unless ispos=TRUE
+# if all are positive, then it is solved much faster.
 #------------------------------------------------------------------------
+
 {
 # input consistency
-if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
-
+    if (!is.matrix(E) & !is.null(E))
+        E <- t(as.matrix(E))
+    if (!is.matrix(G) & !is.null(G))
+        G <- t(as.matrix(G))
 # Dimensions of the problem
-Neq    <- nrow(E)   # number of equations
-Nx     <- ncol(E)   # number of unknowns
-Nineq  <- nrow(G)   # number of inequalities
-
-if (is.null(Nineq)) Nineq <- 0
+    Neq <- nrow(E)
+    Nx <- ncol(E)
+    Nineq <- nrow(G)
+    if (is.null(Nineq))
+        Nineq <- 0
+    Range <- matrix(ncol = 2, nrow = Nx, NA)
 
 # con: constraints ; rhs: right hand side
 # First the equalities 
-con   <- E
-rhs   <- F
-dir   <- rep("==",Neq)
+    con <- E
+    rhs <- F
+    dir <- rep("==", Neq)
+# then the inequalities
+    if (Nineq > 0) {
+        con <- rbind(con, G)
+        rhs <- c(rhs, H)
+        dir <- c(dir, rep(">=", Nineq))
+      }
+    
+    if (ispos) {
 
-if (Nineq > 0)
-{
-con   <- rbind(con,G)
-rhs   <- c(rhs,H)
-dir   <- c(dir,rep(">=",Nineq))
+      for (i in 1:Nx) {
+        obj <- rep(0, Nx)
+        obj[i] <- 1
+        lmin <- lp("min", obj, con, dir, rhs)
+        ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
+            Range[i, 1] <- NA)
+        lmax <- lp("max", obj, con, dir, rhs)
+        ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
+            Range[i, 2] <- NA)
+        }
+    } else{
+      # First test if problem is solvable...
+      Sol <- lsei(E=E,F=F,G=G,H=H)
+      if (Sol$residualNorm > tol)
+      { 
+         warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
+         return(Range)
+       } 
+
+    # double the number of unknowns: x -> x1 -x2, where x1>0 and x2>0
+      con <- cbind(con,-1*con)
+
+      for (i in 1:Nx) {
+        obj <- rep(0, 2*Nx)
+        obj[i]    <- 1
+        obj[Nx+i] <- -1
+
+        lmin <- lp("min", obj, con, dir, rhs)
+        ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
+            Range[i, 1] <- NA)
+        lmax <- lp("max", obj, con, dir, rhs)
+        ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
+            Range[i, 2] <- NA)
+        }
+    }
+    colnames(Range) <- c("min", "max")
+    xnames <- colnames(E)
+    if (is.null(xnames))
+        xnames <- colnames(G)
+    rownames(Range) <- xnames
+    return(Range)
 }
 
-range <- matrix(ncol=2,nrow=Nx,NA)
-
-for (i in 1:Nx)
-{
- obj        <- rep(0,Nx)
- obj[i]     <- 1
- lmin       <- lp("min",obj,con,dir,rhs)
- ifelse (lmin$status == 0, range[i,1] <- lmin$objval,range[i,1]<-NA )
- lmax       <- lp("max",obj,con,dir,rhs)
- ifelse (lmax$status == 0, range[i,2] <- lmax$objval,range[i,2]<-NA  )
-}
- 
-colnames(range) <- c("min","max")
-
-xnames <- colnames(E)
-if (is.null(xnames)) xnames <- colnames(G)
-rownames(range) <- xnames
-
-return(range)           # a 2-column matrix with the minimum and maximum value of each x
-
-} ########## END OF xranges ########## 
 
 ################################################################################
 ## varranges    : Calculates ranges of inverse equations (variables)          ##
@@ -703,7 +724,9 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
                       G=NULL, # numeric matrix containing the coefficients of the inequalities G*X>=H
                       H=NULL, # numeric vector containing the right-hand side of the inequalities
                       EqA,    # numeric matrix containing the coefficients that define the variables
-                      EqB=NULL) # numeric vector containing the right-hand side of the variable equation
+                      EqB=NULL, # numeric vector containing the right-hand side of the variable equation
+                      ispos=FALSE,
+                      tol=1e-8) 
 
 #------------------------------------------------------------------------
 # Given the linear constraints
@@ -728,42 +751,64 @@ Neq    <- nrow(E)    # number of equations
 Nx     <- ncol(E)    # number of unknowns
 Nineq  <- nrow(G)    # number of inequalities
 if (is.null(Nineq)) Nineq <- 0
-if (is.vector(EqA)) EqA <- matrix(nrow=1,ncol=length(EqA),data=EqA)
 
 NVar   <- nrow(EqA)  # number of equations to minimise/maximise
 # con: constraints ; rhs: right hand side
 # First the equalities 
+
 con   <- E
 rhs   <- F
 dir   <- rep("==",Neq)
-
-
 if (Nineq > 0)
-{
-con   <- rbind(con,G)
-rhs   <- c(rhs,H)
-dir   <- c(dir,rep(">=",Nineq))
-}
+   {
+   con   <- rbind(con,G)
+   rhs   <- c(rhs,H)
+   dir   <- c(dir,rep(">=",Nineq))
+   }
+Range <- matrix(ncol=2,nrow=NVar,NA)
 
-range <- matrix(ncol=2,nrow=NVar,NA)
-obj   <- vector(length = Nx)
+if (ispos) {
 
-for (i in 1:NVar)
-{
- obj        <- EqA[i,]
- lmin       <- lp("min",obj,con,dir,rhs)
- ifelse (lmin$status == 0, range[i,1] <- lmin$objval, range[i,1] <- NA)
- lmax       <- lp("max",obj,con,dir,rhs)
- ifelse (lmax$status == 0, range[i,2] <- lmax$objval, range[i,2]  <- NA)
-}
+  obj   <- vector(length = Nx)
+
+  for (i in 1:NVar)
+  {
+   obj        <- EqA[i,]
+   lmin       <- lp("min",obj,con,dir,rhs)
+   ifelse (lmin$status == 0, Range[i,1] <- lmin$objval, Range[i,1] <- NA)
+   lmax       <- lp("max",obj,con,dir,rhs)
+   ifelse (lmax$status == 0, Range[i,2] <- lmax$objval, Range[i,2]  <- NA)
+  }
+} else{
+  # First test if problem is solvable...
+   Sol <- lsei(E=E,F=F,G=G,H=H)
+   if (Sol$residualNorm > tol)
+     { 
+      warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
+      return(Range)
+     } 
+  # double the number of unknowns: x -> x1 -x2, x1>0 and x2>0
+    con <- cbind(con,-1*con)
+    EqA <- cbind(EqA,-1*EqA)
+
+    for (i in 1:NVar) {
+      obj <- EqA[i,]
+      lmin <- lp("min", obj, con, dir, rhs)
+      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
+           Range[i, 1] <- NA)
+      lmax <- lp("max", obj, con, dir, rhs)
+      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
+            Range[i, 2] <- NA)
+        }
+    }
 
 if (!is.null(EqB))
-{range[,1]<-range[,1]-EqB
- range[,2]<-range[,2]-EqB
+{Range[,1]<-Range[,1]-EqB
+ Range[,2]<-Range[,2]-EqB
 }
-colnames(range) <- c("min","max")
-rownames(range) <- rownames(EqA)
-return(range)    # a 2-column matrix with the minimum and maximum value of each equation (variable)
+colnames(Range) <- c("min","max")
+rownames(Range) <- rownames(EqA)
+return(Range)    # a 2-column matrix with the minimum and maximum value of each equation (variable)
 
 } ########## END OF varranges ########## 
 
