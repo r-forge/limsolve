@@ -975,19 +975,19 @@ xsample <- function(A=NULL,             #Ax~=B
         q2 <- rnorm(k,q1,jmp)
         if (!is.null(g))
           {
-            x2 <- g%*%q2-h
+            residual <- g%*%q2-h
             q10 <- q1
             
-            while (any(x2<0))                 #mirror
+            while (any(residual<0))                 #mirror
               {
                 epsilon <- q2-q10                       #vector from q1 to q2: our considered light-ray that will be mirrored at the boundaries of the space
-                w <- which(x2<0)                        #which mirrors are hit?
+                w <- which(residual<0)                        #which mirrors are hit?
                 alfa <- ((h-g%*%q10)/g%*%epsilon)[w]    #alfa: at which point does the light-ray hit the mirrors? g*(q1+alfa*epsilon)-h=0
                 whichminalfa <- which.min(alfa)
                 j <- w[whichminalfa]                    #which smallest element of alfa: which mirror is hit first?
-                d <- -x2[j]/sum(g[j,]^2)     #add to q2 a vector d*Z[j,] which is oriented perpendicular to the plane Z[j,]%*%x+p; the result is in the plane. 
+                d <- -residual[j]/sum(g[j,]^2)     #add to q2 a vector d*Z[j,] which is oriented perpendicular to the plane Z[j,]%*%x+p; the result is in the plane.
                 q2 <- q2+2*d*g[j,]                      #mirrored point
-                x2 <- g%*%q2-h
+                residual <- g%*%q2-h
                 q10 <- q10+alfa[whichminalfa]*epsilon   #point of reflection
               }
           }
@@ -1033,25 +1033,11 @@ xsample <- function(A=NULL,             #Ax~=B
 
     norm <- function(x) sqrt(x%*%x)
 
-    automatedjump <- function(E,F,G,H,g,h,k)
+    automatedjump <- function(g,h,n=5)
       {
-        r <- xranges(E,F,G,H)
-        jmp1 <- max(r[,2]-r[,1])/5
-        jmp2 <- matrix(nrow=k,ncol=5)
-        q3 <- rep(0,k)
-        
-        for (i in 1:5)
-          {
-            q3 <- mirror(q3,g,h,k,jmp1)
-            qrange <- matrix(nrow=length(q3),ncol=2)
-            for (j in 1:k)
-              {
-                qrange[j,1] <- max(((h-g[,-j]%*%q3[-j])/abs(g[,j]))[g[,j]>0])
-                qrange[j,2] <- min(((g[,-j]%*%q3[-j]-h)/abs(g[,j]))[g[,j]<0])
-              }
-            jmp2[,i] <- qrange[,2]-qrange[,1]
-          }
-        jmp <- rowMeans(jmp2)*2
+        r <- xranges(E=NULL,F=NULL,g,h)
+        s <- abs(r[,1]-r[,2])/n
+        return(s)
       }
 
 
@@ -1148,7 +1134,7 @@ xsample <- function(A=NULL,             #Ax~=B
         q[1,] <- q1
       }
     
-    if (is.null(jmp)) jmp <- automatedjump(E,F,G,H,g,h,k)
+    if (is.null(jmp)) jmp <- automatedjump(g,h)
     if (type=="mirror") newq <- mirror
     if (type=="rda") newq <- rda
     if (type=="cda") newq <- cda
