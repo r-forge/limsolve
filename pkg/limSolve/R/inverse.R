@@ -431,7 +431,10 @@ if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
 if (! is.matrix(F) & ! is.null(F)) F <- as.matrix(F)
 if (! is.matrix(B) & ! is.null(B)) B <- as.matrix(B)
 if (! is.matrix(H) & ! is.null(H)) H <- as.matrix(H)
-if (is.null(A)) {A <- matrix(nrow=1,data=E[1,]);B<-F[1]}
+if (is.null(A) && is.null (E)) {
+  A <- matrix(nrow=1,ncol=ncol(G),0)
+  B <- 0                       }  else if (is.null(A)) {
+A <- matrix(nrow=1,data=E[1,]);B<-F[1]}
 
 # Problem dimension
 Neq  <- nrow(E)
@@ -439,9 +442,10 @@ Napp <- nrow(A)
 Nx   <- ncol(A)
 Nin  <- nrow(G)
 if (is.null (Nx))   Nx  <- ncol(E)
+if (is.null (Nx))   Nx  <- ncol(G)
 if (is.null (Neq))  Neq  <- 1
 if (is.null (Nin))  Nin  <- 1
-
+# If equalities/inequalities absent: "empty" constraints...
 if (is.null(E)) E <- matrix(nrow=1,ncol=Nx,0)
 if (is.null(F)) F <- 0
 if (is.null(G)) G <- matrix(nrow=1,ncol=Nx,0)
@@ -630,7 +634,7 @@ resolution <- function (s,              # either matrix or its singular value de
 
 
 xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL, 
-          ispos=FALSE, tol = 1e-8)
+             ispos=FALSE, tol = 1e-8, central = FALSE, full=FALSE)
 #------------------------------------------------------------------------
 # Given the linear constraints
 #                        E*X=F 
@@ -651,10 +655,13 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         G <- t(as.matrix(G))
 # Dimensions of the problem
     Neq <- nrow(E)
-    Nx <- ncol(E)
+    Nx  <- ncol(E)
+    if (is.null(Nx)) Nx <- ncol(G)
     Nineq <- nrow(G)
     if (is.null(Nineq))
         Nineq <- 0
+    if (is.null(Neq))
+        Neq <- 0
     Range <- matrix(ncol = 2, nrow = Nx, NA)
 
 # con: constraints ; rhs: right hand side
@@ -669,6 +676,10 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         dir <- c(dir, rep(">=", Nineq))
       }
     
+    AllX <- NULL
+    Summed <- rep(0,Nx)
+    nsum <- 0
+
     if (ispos) {
 
       for (i in 1:Nx) {
@@ -680,6 +691,15 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         lmax <- lp("max", obj, con, dir, rhs)
         ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
             Range[i, 2] <- NA)
+        if (central)
+                {
+                if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
+                if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
+                }
+        if (full) {
+                  if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
+                  if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
+                          }
         }
     } else{
       # First test if problem is solvable...
@@ -704,13 +724,26 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         lmax <- lp("max", obj, con, dir, rhs)
         ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
             Range[i, 2] <- NA)
+            if (central)
+                {
+                if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
+                if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
+                }
+           if (full) {
+                if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
+                if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
+                     }
         }
+     if (central) Summed <- Summed[1:Nx]- Summed[(Nx+1):(2*Nx)]
+     if (full)    AllX   <- AllX[1:Nx,]-AllX[(Nx+1):(2*Nx),]
     }
     colnames(Range) <- c("min", "max")
     xnames <- colnames(E)
     if (is.null(xnames))
         xnames <- colnames(G)
     rownames(Range) <- xnames
+    if (central) Range<-cbind(Range, central = Summed/nsum)
+    if (full) Range<-cbind(Range, AllX)
     return(Range)
 }
 
@@ -914,12 +947,13 @@ xsample <- function(A=NULL,             #Ax~=B
                     H=NULL,             #Gx>H; 
                     sdB=1,              #standard deviations on B (weighting)
                     iter=3000,          #number of iterations
+                    outputlength = iter, # number of rows of output matrix
                     type="mirror", # one of mirror, cda, da ; cda and da need to have a closed space (inequality constraints)!!
                     jmp=.1,             #jump length of the transformed variables q: x=x0+Zq (only if type=mirror)
                     tol=sqrt(.Machine$double.eps), # accuracy of Z,g,h: smaller numbers are set to zero to avoid rounding errors
-                    x0=NULL,             #particular solution
-                    fulloutput=FALSE)   # provide diagnostic output such as the transformed variables q,
-                                        # and sample probabilities
+                    x0=NULL,            #particular solution
+                    fulloutput=FALSE,   # provide diagnostic output such as the transformed variables q, and sample probabilities
+                    test=TRUE)          # if "test" test for hidden equalities
   {
 
     #########################################
@@ -983,11 +1017,14 @@ xsample <- function(A=NULL,             #Ax~=B
         d <- e/norm(e)                        #d: random direction vector; q2 = q + alfa*d
         
         alfa <- ((h-g%*%q)/g%*%d)             #
+        if (any(alfa>0)) alfa.u <- min(alfa[alfa>0]) else alfa.u <- 0
+        if (any(alfa<0)) alfa.l <- max(alfa[alfa<0]) else alfa.l <- 0
+
         alfa.u <- min(alfa[alfa>0])
         alfa.l <- max(alfa[alfa<0])
         q.u <- q+alfa.u*d
         q.l <- q+alfa.l*d
-        q.l <- q+alfa.l*d
+
         if (any(g%*%q.u<h)) alfa.u <- 0
         if (any(g%*%q.l<h)) alfa.l <- 0
         q <- q+runif(1,alfa.l,alfa.u)*d
@@ -1021,7 +1058,27 @@ xsample <- function(A=NULL,             #Ax~=B
     #############################
     ## 2. the xsample function ##
     #############################
+# KS: test for equalities, hidden in inequalities...
+    if (test)
+    {
+      xv <- varranges(E,F,G,H,EqA=G)
+      ii <- which (xv[,1]-xv[,2]==0)
+      if (length(ii)>0) { # if they exist: add regular equalities !
+      E  <- rbind(E,G[ii,])
+      F  <- c(F,xv[ii,1])
 
+      G  <- G[-ii,]
+      H  <- H[-ii]
+      }
+      xr <- xranges(E,F,G,H)
+      ii <- which (xr[,1]-xr[,2]==0)
+      if (length(ii)>0)  # if they exist: add regular equalities !
+      {
+        dia <- diag(nrow=nrow(xr))
+        E  <- rbind(E,dia[ii,])
+        F  <- c(F,xr[ii,1])
+       }
+    }
     ## conversions vectors to matrices and checks
     if (is.vector(A)) A <- t(as.matrix(A))
     if (is.vector(E)) E <- t(as.matrix(E))
@@ -1054,6 +1111,11 @@ xsample <- function(A=NULL,             #Ax~=B
         h <- H-G%*%x0                                            #gq-h>=0
         g[abs(g)<tol] <- 0
         h[abs(h)<tol] <- 0
+#        select <- rowSums(abs(g))>0
+#        if (any(h[-select]>0)) stop("incompatible constraints")
+#        h <- h[select]
+#        g <- g[select,]
+
       } else { g <- G; h <- H }
     
 
@@ -1067,35 +1129,47 @@ xsample <- function(A=NULL,             #Ax~=B
         prob <- function(q) 1
         test <- function(q2) TRUE
       }
-
+    outputlength <- min (outputlength,iter)
+    ou <- ceiling(iter/outputlength)
+    iter <- iter - iter%%ou
+    outputlength <-iter%/%ou
+    Nrows <- outputlength + (ou>1)
     k <- ncol(Z)
     q1 <- rep(0,k)
-    x <- matrix(ncol=n,nrow=iter,dimnames=list(NULL,colnames(A)))
+    x <- matrix(ncol=n,nrow=Nrows,dimnames=list(NULL,colnames(A)))
     x[1,] <- x0
     naccepted <- 1
-    p <- vector(length=iter) # probability distribution
+    p <- vector(length=Nrows) # probability distribution
     p[1] <- prob(q1)
 
     if (fulloutput)
       {
-        q <- matrix(ncol=k,nrow=iter)
+        q <- matrix(ncol=k,nrow=Nrows)
         q[1,] <- q1
       }
     
     if (is.null(jmp)) jmp <- automatedjump(E,F,G,H,g,h,k)
-
     if (type=="mirror") newq <- mirror
     if (type=="rda") newq <- rda
     if (type=="cda") newq <- cda
 
+    isave <- ou
+    ii <- 1
     for (i in 2:iter)
       {
         q2 <- newq(q1,g,h,k,jmp)
-        if (test(q2)) { q1 <- q2 ; naccepted=naccepted+1}
-        x[i,] <- x0+Z%*%q1
-        p[i] <- prob(q1)
+        if (test(q2)) { q1 <- q2
+        naccepted=naccepted+1
 
-        if (fulloutput)  q[i,] <- q1
+        if (naccepted >= isave)
+        { isave <- isave + ou
+        ii <- ii + 1
+        x[ii,] <- x0+Z%*%q1
+        p[ii] <- prob(q1)
+
+        if (fulloutput)  q[ii,] <- q1
+          }
+        }
       }
 
     xnames <- colnames(A)

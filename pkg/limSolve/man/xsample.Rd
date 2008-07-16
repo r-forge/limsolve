@@ -10,9 +10,9 @@
  \deqn{Gx>=h}
  where Ex=F have to be met exactly, and \eqn{Ax\simeq B} approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
-G=NULL, H=NULL, sdB=1, iter=3000, type = "mirror", 
-jmp = 0.1, tol=sqrt(.Machine$double.eps), 
-x0=NULL, fulloutput = FALSE)}
+G=NULL, H=NULL, sdB=1, iter=3000, outputlength=iter,
+type = "mirror", jmp = 0.1, tol=sqrt(.Machine$double.eps),
+x0=NULL, fulloutput = FALSE, test=TRUE)}
 \arguments{
   \item{A }{numeric matrix containing the coefficients of the
     (approximate) equality constraints, \eqn{Ax\simeq B}}
@@ -23,11 +23,14 @@ x0=NULL, fulloutput = FALSE)}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
   \item{sdB }{vector with standard deviation on B, used for weighing; default = equal weights}
   \item{iter }{integer determining the number of iterations}
+  \item{outputlength} { number of iterations kept in the output; at most equal to \code{iter}}
   \item{type }{type of algorithm: one of: "mirror", (mirroring algorithm), "rda" (random directions algorithm) or "cda" (coordinates directions algorithm)}
   \item{jmp }{jump length of the transformed variables q: \eqn{x=x0+Zq} (only if \code{type}=="mirror")}
   \item{tol }{tolerance for equality and inequality constraints; numbers whose absolute value is smaller than \code{tol} are set to zero}
   \item{x0 }{initial (particular) solution}
   \item{fulloutput }{if TRUE, also outputs the transformed variables q}
+  \item{test }{if TRUE, xsample will test for hidden equalities (see details). May be necessary for large problems, but slows down execution a bit}
+
 }
 \value{
   a list containing:
@@ -42,8 +45,8 @@ x0=NULL, fulloutput = FALSE)}
 E <- rbind(Minkdiet$Prey,rep(1,7))
 F <- c(Minkdiet$Mink,1)
 
-pairs(xsample(E=E,F=F,G=diag(7),H=rep(0,7),iter=1000)$X,
-     main="Minkdiet 1000 solutions")
+pairs(xsample(E=E,F=F,G=diag(7),H=rep(0,7),iter=5000,output=1000,type="cda")$X,
+     main="Minkdiet 1000 solutions, - cda")
 
 # sample the overdetermined Chemtax problem
 Nx     <-nrow(Chemtax$Ratio)
@@ -58,14 +61,16 @@ F <- 1
 G <- diag(nrow=Nx)
 H <- rep(0,Nx)
   
-# equations that must be reproduced as close as possible, Ax ~ b
+# equations that must be reproduced as closely as possible, Ax ~ b
 # the field data; the input ratio matrix and field data are rescaled
 A     <- t(Chemtax$Ratio/rowSums(Chemtax$Ratio))
 B     <- Chemtax$Field/sum(Chemtax$Field)
   
 # Sample
-pairs(xsample(A=A,B=B,E=E,F=F,G=G,H=H,iter=1000)$X,
-     main="Chemtax 1000 solutions")}
+xs <- xsample(A=A,B=B,E=E,F=F,G=G,H=H,iter=2000,outputlen=1000)$X
+pairs(xs, main="Chemtax 1000 solutions - 2000 iterations")
+
+     }
 \details{The algorithm proceeds in two steps.
 	\item (1) the equality constraints \eqn{Ex=F} are eliminated, and the system \eqn{Ex=f}, \eqn{Gx>=h} is rewritten as \eqn{G(p+Zq)>= h}, 
   i.e. containing only inequality constraints.
@@ -82,7 +87,16 @@ For more information, see \file{xsamplevignette.pdf} in the packages \file{docs}
   \item Raftery and Lewis (1996) suggest a minimum of 3000 iterations to reach the extremes 
   \item If provided, then \code{p} should be a valid particular solution (i.e. Ex=b and G>=h), else the algorithm will fail.
   \item If the particular solution (\code{x0}) is not provided, then the parsimonious solution is sought, see \code{\link{ldei}}. 
-  For underdetermined systems, this may not be the most efficient way to start the algorithm}
+  For underdetermined systems, this may not be the most efficient way to start the algorithm
+
+Alternatively, one may run \code{\link{xranges}} first, with option \code{central} equal to TRUE. This central value will be located
+centrally in the solution space and may constitute a good starting point of the sampling.
+
+The algorithm will fail if there are hidden equalities. For instance, sometimes two inequalities together impose an equality on an unknown,
+or -(more difficult to trace), inequalities may impose equalities on a linear combination of two or more unknowns.
+
+In this case, the null space Z will be deficient. If you suspect this might be the case, set \code{test} to TRUE. This will slow down execution though...
+  }
 \keyword{algebra}
 \keyword{array}
 \keyword{optimize}
