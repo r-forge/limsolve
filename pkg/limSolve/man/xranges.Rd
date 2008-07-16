@@ -7,15 +7,18 @@
  finds the minimum and maximum values of all elements of vector \eqn{x}
  \cr by successively minimising and maximising each \code{x}, using linear programming
  \cr Uses \code{lpSolve} - see note}
-\usage{xranges(E=NULL, F=NULL, G=NULL, H=NULL, ispos=FALSE, tol=1e-8)}
+\usage{xranges(E=NULL, F=NULL, G=NULL, H=NULL, ispos=FALSE, tol=1e-8,
+       central = FALSE, full=FALSE)}
 \arguments{
-  \item{E }{numeric matrix containing the coefficients of the equaliies \eqn{Ex=F}}
+  \item{E }{numeric matrix containing the coefficients of the equalities \eqn{Ex=F}}
   \item{F }{numeric vector containing the right-hand side of the equalities}
   \item{G }{numeric matrix containing the coefficients of the inequalities \eqn{Gx>=H}}
   \item{H }{numeric vector containing the right-hand side of the inequalities}
   \item{ispos }{if TRUE, it is imposed that unknowns are positive quantities}
   \item{tol }{tolerance for equality and inequality constraints}
-}
+  \item{central }{if TRUE, the mean value of all range solutions is also outputted}
+  \item{full }{if TRUE, all range solutions are also outputted}
+  }
 \value{
   a 2-column matrix with the minimum and maximum value of each \code{x}
 }
@@ -26,7 +29,19 @@ B <- c(Minkdiet$Mink,1)
 (DC<-xranges(A,B,ispos=TRUE))
 (DC<-xranges(A,B,G=diag(7),H=rep(0,7)))
 }
-\seealso{\code{\link{varranges}}, 
+\details{by default linear programming assumes that all unknowns are positive. If this is the case,
+set \code{ispos} equal to TRUE; the function will execute faster then.
+
+\code{xranges} outputs only the minimum and maximum value of each flow unless:
+
+\code{full} is TRUE. In this caase, all the results of the linear programming will be outputted, not just
+the value of the unknown being optimised but also the corresponding values of the other unknowns.
+
+If \code{central} is TRUE, then the mean of all the results of the linear programming will be outputted.
+This may be a good starting value for \code{\link{xsample}}
+}
+\seealso{\code{\link{varranges}}, for range estimation of variables,
+\cr\code{\link{xsample}}, to randomly sample the lsei problem
 \cr \code{\link[lpSolve]{lp}}: linear programming from package lpSolve}
 \note{we have experienced that \code{lpSolve} sometimes fails (and \R stops) if it is frequently repeated, and for small problems.}
 \keyword{algebra}
