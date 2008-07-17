@@ -41,7 +41,9 @@ As there are more unknowns (70) than equations (54), there exist an infinite amo
 }
 \usage{E_coli}
 \format{A list with the matrices and vectors that constitute the mass balance problem:
-\code{A}, \code{B}, \code{G} and \code{G} and \code{Maximise}
+\code{A}, \code{B}, \code{G} and \code{H} and
+
+\code{Maximise}, with the function to maximise.
 
 The columnames of \code{A} and \code{G} are the names of the unknow reaction rates;
 The first 53 rownames of \code{A} give the names of the components (these rows consitute the mass balance equations).}
@@ -50,16 +52,32 @@ The first 53 rownames of \code{A} give the names of the components (these rows c
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
 \examples{
 
-attach(E_coli)
 
 # 1. parsimonious (simplest) solution
-pars <- lsei(E=A,F=B,G=G,H=H)$x
+pars <- lsei(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H)$x
 
-# 2. the optimal solution
-#LP<-linp(E=A,F=B,G=G,H=H,Cost=-profit[1,],ispos=FALSE)
+# 2. the optimal solution - solved with linear programming
+#    as some unknowns can be negative -> the problem is reformulated
+#    define X = x1 - x2, where x1>0 and x2>0
+#    and solve for x1, x2.
+
+     # double all columns (unknowns)
+     AA   <- cbind(E_coli$A, -1*E_coli$A)
+     BB   <- E_coli$B
+     GG   <- cbind(E_coli$G, -1*E_coli$G)
+     HH   <- E_coli$H
+     Cost <- -1*c(E_coli$Maximise,-1*E_coli$Maximise)
+     
+     LP<-linp(E=AA,F=BB,G=GG,H=HH,Cost=Cost)
+     Nx   <- ncol(E_coli$A)   # number unknowns
+
+     # X = x1 - x2
+     (Optimal <- LP$X[1:Nx] - LP$X[(Nx+1):(2*Nx)])
+     
 
 # 3.ranges of all unknowns, including the central value and all solutions
-xr   <- xranges(E=A,F=B,G=G,H=H,central=TRUE, full=TRUE)
+xr   <- xranges(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
+                central=TRUE, full=TRUE)
 
 # plotting these values already shows the shape of the uncertainty region
 plot(xr[1,],xr[2,])
@@ -68,21 +86,22 @@ points(xr[1,3],xr[2,3],col="red",pch=16,cex=2)
 
 # the central point is a valid solution:
 X <- xr[,"central"]
-max(abs(A\%*\%X-B))
-min(G\%*\%X-H)
+max(abs(E_coli$A\%*\%X-E_coli$B))
+min(E_coli$G\%*\%X-E_coli$H)
 
 # 4. Sample solution space; the central value is a good starting point
 #   for algorithms cda and rda - but these need many iterations
-xs<-xsample(E=A,F=B,G=G,H=H,iter=50000,out=5000,type="rda",x0=X)$X
+xs<-xsample(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
+            iter=50000,out=5000,type="rda",x0=X)$X
 pairs(xs[,10:20],pch=".",cex=2)
 
 # using mirror algorithm takes less iterations,
 # but an iteration takes more time ; it is better to start in a corner...
 # (i.e. no need to use X as starting value)
-xs<-xsample(E=A,F=B,G=G,H=H,iter=10000,out=2500,jmp=50,type="mirror")$X
+xs<-xsample(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
+            iter=10000,out=2500,jmp=50,type="mirror")$X
 pairs(xs[,10:20],pch=".",cex=2)
 
-detach(E_coli)
 }
 \references{\item \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis }
 \item Edwards,J.S., Covert, M., and Palsson, B.., " Metabolic Modeling of Microbes: the Flux Balance Approach", Environmental Microbiology, 4(3): pp. 133-140 (2002).

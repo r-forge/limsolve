@@ -44,7 +44,8 @@ As there are 7 unknowns and only 3 equations, the model is UNDERdetermined, i.e.
 This model can be solved by various techniques:
 \item (1) least distance programming will select the "simplest" solution. See \code{\link{ldei}}.
 \item (2) the remaining uncertainty ranges of the fractions can be estimated using linear programming. See \code{\link{xranges}}
-\item (3) the statistical distribution of the fractions can be estimated using a MCMC algorithm which takes a sample of the solution space. See \code{\link{xsample}}}
+\item (3) the statistical distribution of the fractions can be estimated using a MCMC algorithm which takes a sample of the solution space. See \code{\link{xsample}}
+}
 \usage{Minkdiet}
 \format{a list with matrix \code{Prey} and vector \code{Mink}. 
 \item (*) \code{Prey} contains the isotopic composition (13C and 15N) of the 7 possible food items of Mink

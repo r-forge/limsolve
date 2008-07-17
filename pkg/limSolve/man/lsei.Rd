@@ -13,7 +13,7 @@
 Wx=NULL, Wa=NULL, type=1, tol=sqrt(.Machine$double.eps),
 tolrank=NULL, fulloutput=FALSE, verbose=TRUE)}
 \arguments{
-  \item{A }{numeric matrix containing the coefficients of the quadratic function to be minimised, \eqn{||Ax-B||}; if the columns of A have a names attribute, they will be used to label the output}
+  \item{A }{numeric matrix containing the coefficients of the quadratic function to be minimised, \eqn{||Ax-B||^2}; if the columns of A have a names attribute, they will be used to label the output}
   \item{B }{numeric vector containing the right-hand side of the quadratic function to be minimised}
   \item{E }{numeric matrix containing the coefficients of the equality constraints, \eqn{Ex=F}; if the columns of E have a names attribute, and the columns of A do not, they will be used to label the output}
   \item{F }{numeric vector containing the right-hand side of the equality constraints}

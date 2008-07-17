@@ -22,7 +22,7 @@ tol=sqrt(.Machine$double.eps), verbose=TRUE)}
 }
 \value{
   a list containing:
-  \item{X }{vector containing the solution of the least distance with equalities and inequalties problem.}
+  \item{X }{vector containing the solution of the least distance with equalities and inequalities problem.}
   \item{unconstrained.solution }{vector containing the unconstrained solution of the least distance problem, i.e. ignoring \eqn{Gx>=h}}
   \item{residualNorm }{scalar, the sum of absolute values of residuals of equalities and violated inequalities; should be zero or very small if the problem is feasible}
   \item{solutionNorm }{scalar, the value of the quadratic function at the solution, i.e. the value of \eqn{\sum {w_i*x_i}^2}}
@@ -30,7 +30,7 @@ tol=sqrt(.Machine$double.eps), verbose=TRUE)}
   \item{type }{the string "ldei", such that how the solution was obtained can be traced}
 }
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
-\examples{# parsimonious (simplest) solution of mink diet problem
+\examples{# parsimonious (simplest) solution of the mink diet problem
 A <- rbind(Minkdiet$Prey,rep(1,7))
 B <- c(Minkdiet$Mink,1)
 
