@@ -949,7 +949,7 @@ xsample <- function(A=NULL,             #Ax~=B
                     iter=3000,          #number of iterations
                     outputlength = iter, # number of rows of output matrix
                     type="mirror", # one of mirror, cda, da ; cda and da need to have a closed space (inequality constraints)!!
-                    jmp=.1,             #jump length of the transformed variables q: x=x0+Zq (only if type=mirror)
+                    jmp=NULL,             #jump length of the transformed variables q: x=x0+Zq (only if type=mirror)
                     tol=sqrt(.Machine$double.eps), # accuracy of Z,g,h: smaller numbers are set to zero to avoid rounding errors
                     x0=NULL,            #particular solution
                     fulloutput=FALSE,   # provide diagnostic output such as the transformed variables q, and sample probabilities
@@ -977,7 +977,7 @@ xsample <- function(A=NULL,             #Ax~=B
           {
             residual <- g%*%q2-h
             q10 <- q1
-            
+
             while (any(residual<0))                 #mirror
               {
                 epsilon <- q2-q10                       #vector from q1 to q2: our considered light-ray that will be mirrored at the boundaries of the space
@@ -1005,7 +1005,7 @@ xsample <- function(A=NULL,             #Ax~=B
         h1 <- h-as.matrix(g[,-i])%*%q[-i]              # g[,i]q[i]>h1
         maxqi <- min((h1/g[,i])[g[,i]<0])
         minqi <- max((h1/g[,i])[g[,i]>0])
-        q[i] <- runif(1,minqi,maxqi)
+        q[i]  <-  runif(1,minqi,maxqi)
         return(q)
       }
 
@@ -1020,8 +1020,6 @@ xsample <- function(A=NULL,             #Ax~=B
         if (any(alfa>0)) alfa.u <- min(alfa[alfa>0]) else alfa.u <- 0
         if (any(alfa<0)) alfa.l <- max(alfa[alfa<0]) else alfa.l <- 0
 
-        alfa.u <- min(alfa[alfa>0])
-        alfa.l <- max(alfa[alfa<0])
         q.u <- q+alfa.u*d
         q.l <- q+alfa.l*d
 
@@ -1097,10 +1095,6 @@ xsample <- function(A=NULL,             #Ax~=B
         h <- H-G%*%x0                                            #gq-h>=0
         g[abs(g)<tol] <- 0
         h[abs(h)<tol] <- 0
-#        select <- rowSums(abs(g))>0
-#        if (any(h[-select]>0)) stop("incompatible constraints")
-#        h <- h[select]
-#        g <- g[select,]
 
       } else { g <- G; h <- H }
     

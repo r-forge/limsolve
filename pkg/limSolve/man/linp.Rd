@@ -8,9 +8,10 @@
  \deqn{Gx>=h}
 
  
- Note: this function is simply a wrapper around \code{\link[lpSolve]{lp}} from package lpSolve
- \cr This R-code may fail and terminate \R for very small problems that are repeated frequently...
- \cr Sometimes multiple solutions exist for the same problem.}
+ This function is simply a wrapper around \code{\link[lpSolve]{lp}} (see note) from package lpSolve, written to be consistent with the
+ other functions \code{lsei}, and \code{ldei}. }
+\note{The function \code{lp} may fail and terminate R for very small problems that are repeated frequently...
+ \cr Also note that sometimes multiple solutions exist for the same problem.}
 \usage{linp(E=NULL, F=NULL, G=NULL, H=NULL, Cost, verbose=TRUE, ...)}
 \arguments{
   \item{E }{numeric matrix containing the coefficients of the equality constraints \eqn{Ex=F}; if the columns of E have a names attribute, they will be used to label the output}
@@ -66,7 +67,10 @@ Cost <- c(1,8,9,2,7,3)
 L$residualNorm}
 \seealso{\code{\link{ldei}},  \code{\link{lsei}}, 
 \cr \code{\link[lpSolve]{lp}} the original function from package lpSolve
-\cr \code{\link{Blending}}}
+\cr \code{\link{Blending}}, a linear programming problem}
+\references{Michel Berkelaar and others (2007).
+lpSolve: Interface to Lpsolve v. 5.5 to solve linear or integer programs. R package version 5.5.8.
+}
 \keyword{algebra}
 \keyword{array}
 \keyword{optimize}

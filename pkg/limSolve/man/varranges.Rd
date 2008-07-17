@@ -9,7 +9,7 @@
  \deqn{Var = EqA.x+EqB}
  finds the minimum and maximum values of the variables
   by successively minimising and maximising each variable equation
- \cr uses linear programming function lpSolve (see note)}
+ \cr uses linear programming function \code{lp} from package lpSolve (see note)}
 \usage{varranges(E=NULL, F=NULL, G=NULL, H=NULL, EqA, EqB=NULL, 
        ispos=FALSE, tol=1e-8)}
 \arguments{
@@ -35,8 +35,8 @@ EqA   <- c(0,0,1,1,1,0,0)                 # sum of food 3,4,5
 varranges(A,B,EqA=EqA,G=diag(7),H=rep(0,7)) 
 }
 \seealso{\code{\link{xranges}}, 
-\cr \code{\link[lpSolve]{lp}}: linear programming from package lpSolve}
-\note{we have experienced that \code{lpSolve} sometimes fails (and \R stops) if it is frequently repeated, and for small problems.}
+\cr \code{\link[lpSolve]{lp}}: linear programming function from package lpSolve}
+\note{we have experienced that \code{lp} sometimes fails (and \R stops) if it is frequently repeated, and for small problems.}
 \keyword{algebra}
 \keyword{array}
 \keyword{optimize}
