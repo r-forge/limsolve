@@ -2,7 +2,7 @@
 \docType{data}
 \alias{E_coli}
 \title{An underdetermined linear inverse problem: the Escherichia Coli Core Metabolism Model}
-\description{Input matrices and vectors files for performing Flux Balance Analysis of the E.coli metabolism
+\description{Input matrices and vectors for performing Flux Balance Analysis of the E.coli metabolism
 
 (as from \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis}).
 
