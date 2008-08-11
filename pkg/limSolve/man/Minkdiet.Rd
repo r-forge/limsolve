@@ -81,7 +81,7 @@ dotchart(x=as.vector(parsimonious$X),labels=colnames(Minkdiet$A),
           sub="using ldei and xranges",pch=16)
 
 # Ranges of diet composition
-iso   <- xranges(E,F)
+iso   <- xranges(E,F,ispos=TRUE)
 segments(iso[,1],1:ncol(E),iso[,2],1:ncol(E))
 legend  ("topright",pch=c(16,NA),lty=c(NA,1),
           legend=c("parsimonious","range"))

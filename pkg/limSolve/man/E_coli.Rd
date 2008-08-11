@@ -45,7 +45,7 @@ As there are more unknowns (70) than equations (54), there exist an infinite amo
 
 \code{Maximise}, with the function to maximise.
 
-The columnames of \code{A} and \code{G} are the names of the unknow reaction rates;
+The columnames of \code{A} and \code{G} are the names of the unknown reaction rates;
 The first 53 rownames of \code{A} give the names of the components (these rows consitute the mass balance equations).}
 
 
@@ -54,7 +54,7 @@ The first 53 rownames of \code{A} give the names of the components (these rows c
 
 
 # 1. parsimonious (simplest) solution
-pars <- lsei(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H)$x
+pars <- lsei(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H)$X
 
 # 2. the optimal solution - solved with linear programming
 #    as some unknowns can be negative -> the problem is reformulated
@@ -80,9 +80,9 @@ xr   <- xranges(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
                 central=TRUE, full=TRUE)
 
 # plotting these values already shows the shape of the uncertainty region
-plot(xr[1,],xr[2,])
+#plot(xr[1,],xr[2,])
 # and the central value in red...
-points(xr[1,3],xr[2,3],col="red",pch=16,cex=2)
+#points(xr[1,3],xr[2,3],col="red",pch=16,cex=2)
 
 # the central point is a valid solution:
 X <- xr[,"central"]
@@ -93,15 +93,29 @@ min(E_coli$G\%*\%X-E_coli$H)
 #   for algorithms cda and rda - but these need many iterations
 xs<-xsample(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
             iter=50000,out=5000,type="rda",x0=X)$X
-pairs(xs[,10:20],pch=".",cex=2)
+pairs(xs[,10:20],pch=".",cex=2,main="sampling, using rda")
 
 # using mirror algorithm takes less iterations,
 # but an iteration takes more time ; it is better to start in a corner...
 # (i.e. no need to use X as starting value)
 xs<-xsample(E=E_coli$A,F=E_coli$B,G=E_coli$G,H=E_coli$H,
-            iter=10000,out=2500,jmp=50,type="mirror")$X
-pairs(xs[,10:20],pch=".",cex=2)
+            iter=5000,out=1000,jmp=50,type="mirror")$X
+pairs(xs[,10:20],pch=".",cex=2,main="sampling, using mirror")
 
+# Print results:
+data.frame(pars=pars,Optimal=Optimal,xr[,1:2],Mean=colMeans(xs),sd=sd(xs))
+
+# Plot results
+par(mfrow=c(1,2))
+nr <- length(Optimal)/2
+ii <- 1:nr
+dotchart(Optimal[ii],xlim = range(xr),pch=16)
+segments(xr[ii,1],1:nr,xr[ii,2],1:nr)
+ii <- (nr+1):length(Optimal)
+dotchart(Optimal[ii],xlim = range(xr),pch=16)
+segments(xr[ii,1],1:nr,xr[ii,2],1:nr)
+mtext(side= 3, cex=1.5, outer = TRUE, line=-1.5,
+      "E coli Core Metabolism, optimal solution and ranges")
 }
 \references{\item \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis }
 \item Edwards,J.S., Covert, M., and Palsson, B.., " Metabolic Modeling of Microbes: the Flux Balance Approach", Environmental Microbiology, 4(3): pp. 133-140 (2002).

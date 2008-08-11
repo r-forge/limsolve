@@ -43,8 +43,8 @@
 ## ldei        : Solves underdetermined problem, Least Distance Programming   ##
 ################################################################################
 
-ldei <- function(E,  # numeric matrix containing the coefficients of the equality constraints Ex=F
-                F,  # numeric vector containing the right-hand side of the equality constraints        
+ldei <- function(E,      # numeric matrix containing the coefficients of the equality constraints Ex=F
+                F,       # numeric vector containing the right-hand side of the equality constraints
                 G=NULL,  # numeric matrix containing the coefficients of the inequality constraints G*X>=H
                 H=NULL,  # numeric vector containing the right-hand side of the inequality constraints
                 Wx=rep(1,times=ncol(E)),        # Weight coefficients of the quadratic function (the xs) to be minimised
@@ -56,7 +56,6 @@ ldei <- function(E,  # numeric matrix containing the coefficients of the equalit
 if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
 if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
 
-
 #------------------------------------------------------------------------
 # 0. Setup problem
 #------------------------------------------------------------------------
@@ -66,6 +65,10 @@ if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
 Neq    <- nrow(E)   # number of equations
 Nx     <- ncol(E)   # number of unknowns
 Nin    <- nrow(G)   # number of inequalities
+
+# copies
+EE <- E
+GG <- G
 
 # Correct flows for weights Wx; every column multiplied with same weight
 E      <- t(t(E) * Wx)
@@ -79,7 +82,7 @@ G      <- t(t(G) * Wx)
 }
 
 if (length(F) != Neq) stop("cannot solve least distance problem - E and F not compatible")
-if (length(Wx) != Nx)  stop("cannot solve least distance problem - Wx and E not compatible")
+if (length(Wx) != Nx) stop("cannot solve least distance problem - Wx and E not compatible")
 
 
 #------------------------------------------------------------------------
@@ -144,7 +147,7 @@ if (all(CC > -tol))     # done
                        verbose=as.logical(verbose),IsError=as.logical(IsError))
 
  IsError<-sol$IsError 
- 
+
  # The solution, corrected for weights
  X    <- ortho[,1:unsolvable] %*% as.matrix(sol$X) + Xb
  X    <- X * Wx
@@ -154,22 +157,22 @@ if (all(CC > -tol))     # done
 
  # Residual of the inequalities
  residin  <- 0
- if (!is.null(G)) {
- ineq     <- G %*% X - H
+ if (!is.null(GG)) {
+ ineq     <- GG %*% X - H
  residin  <- -sum(ineq[ineq<0])
                    }
  # Total residual norm
- residual <- sum(abs(E %*% X - F))+residin  
+ residual <- sum(abs(EE %*% X - F))+residin
 
  # The solution norm
  solution <- sum ((Wx*X)^2)
-
+X    <- as.vector(X)
 xnames <- colnames(E)
 if (is.null(xnames)) xnames <- colnames(G)
 names (X) <- xnames
 
 return(list(X=X,                            # vector containing the solution of the least distance problem.
-            unconstrained.solution=Xb * Wx,  # vector containing the unconstrained solution of the least distance problem
+            unconstrained.solution=as.vector(Xb * Wx),  # vector containing the unconstrained solution of the least distance problem
             residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
             solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
             IsError=IsError,                # if an error occurred
@@ -432,6 +435,7 @@ if (! is.matrix(F) & ! is.null(F)) F <- as.matrix(F)
 if (! is.matrix(B) & ! is.null(B)) B <- as.matrix(B)
 if (! is.matrix(H) & ! is.null(H)) H <- as.matrix(H)
 if (is.null(A) && is.null (E)) {
+  if(is.null(G))   stop("cannot solve least squares problem - A, E AND G are NULL")
   A <- matrix(nrow=1,ncol=ncol(G),0)
   B <- 0                       }  else if (is.null(A)) {
 A <- matrix(nrow=1,data=E[1,]);B<-F[1]}
@@ -867,7 +871,15 @@ Solve <- function(A,                     # numeric matrix containing the coeffic
     {
      M <-ginv(A,tol)
      if (is.null(M)) return(NULL)
-     return(M %*% B)   # the generalised inverse solution, x, of Ax=B; if B is not specified: returns the generalised inverse of A
+     B <- matrix(nrow=nrow(A),data=B)
+     X <- M %*% B
+     if (ncol(B) == 1)
+     {
+     xnames <- colnames(A)
+     X <- as.vector(X)
+     names (X) <- xnames
+     }
+     return(X)   # the generalised inverse solution, x, of Ax=B; if B is not specified: returns the generalised inverse of A
     }
 
 
@@ -893,7 +905,8 @@ Solve.tridiag  <- function(diam1,   # (nonzero) elements below the diagonal
     sol <-.Fortran("tridia",Nmx=Nmx, 
                    au=as.double(c(0,diam1)),bu=as.double(dia),cu=as.double(c(diap1,0)),
                    du=as.double(rhs),value=as.double(value))
-    return(sol$value)    # vector with solution of tridiagonal system                 
+
+    return(sol$value)    # vector with solution of tridiagonal system
 
     }
     
@@ -1033,6 +1046,7 @@ xsample <- function(A=NULL,             #Ax~=B
 
     automatedjump <- function(g,h,n=5)
       {
+        if (is.null(g)) return(1)
         r <- xranges(E=NULL,F=NULL,g,h)
         s <- abs(r[,1]-r[,2])/n
         return(s)
@@ -1043,7 +1057,7 @@ xsample <- function(A=NULL,             #Ax~=B
     ## 2. the xsample function ##
     #############################
 # KS: test for equalities, hidden in inequalities...
-    if (test)
+    if (test && !is.null(G))
     {
       xv <- varranges(E,F,G,H,EqA=G)
       ii <- which (xv[,1]-xv[,2]==0)
@@ -1152,6 +1166,12 @@ xsample <- function(A=NULL,             #Ax~=B
         }
       }
 
+    if (ii < Nrows) # remove rows with NA
+    {
+      x <- x[1:ii,]
+      p <- p[1:ii]
+      if (fulloutput)  q <- q[ii,]
+    }
     xnames <- colnames(A)
     if (is.null(xnames)) xnames <- colnames(E)
     if (is.null(xnames)) xnames <- colnames(G)

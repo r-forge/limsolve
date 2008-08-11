@@ -13,7 +13,7 @@ constraints \eqn{Ex=f} and/or inequality constraints \eqn{Gx>=h}.
 
 (2.) Sample an underdetermined- or overdetermined system \eqn{Ex=f} subject to \eqn{Gx>=h}, and if applicable \eqn{Ax~=b}.
 
-(3.)Solve a linear system \eqn{Ax=B} for the unknown x. Includes banded and tridiagonal linear systems.
+(3.) Solve a linear system \eqn{Ax=B} for the unknown x. Includes banded and tridiagonal linear systems.
 
 The package calls Fortran functions from LINPACK
 
@@ -47,7 +47,7 @@ The package contains several examples to exemplify its use
 %% to be filled
 %}
 \seealso{
- \code{\link{Blending}}, \code{\link{Chemtax}}, \code{\link{E_coli}}, \code{\link{Minkdiet}} the examples.
+ \code{\link{Blending}}, \code{\link{Chemtax}}, \code{\link{RigaWeb}}, \code{\link{E_coli}}, \code{\link{Minkdiet}} the examples.
 
  \code{\link{ldei}}, \code{\link{lsei}},\code{\link{linp}}, \code{\link{ldp}}, \code{\link{nnls}} to solve LIM
 
@@ -58,6 +58,8 @@ The package contains several examples to exemplify its use
  \code{\link{Solve}}, \code{\link{Solve.banded}}, \code{\link{Solve.tridiag}}, to solve non-square, banded and tridiagonal linear systems of equations.
  
  \code{\link{resolution}} row and column resolution of a matrix
+ 
+ package vignette \code{limSolve}
 }
 
 \examples{
@@ -76,6 +78,9 @@ browseURL(paste(system.file(package="limSolve"), "/doc", sep=""))
 
 ## show package vignette with tutorial about xsample
 vignette("xsample")
+
+## show main package vignette
+vignette("limSolve")
 browseURL(paste(system.file(package="limSolve"), "/doc", sep=""))
 }
 }
