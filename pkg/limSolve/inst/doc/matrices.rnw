@@ -1,0 +1,551 @@
+\documentclass[article,nojss]{jss}
+\DeclareGraphicsExtensions{.pdf,.eps}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Add-on packages and fonts
+%%\usepackage{mathptmx}
+%%\usepackage{float}
+\usepackage{graphicx}
+\usepackage{amsmath}
+%\usepackage{amssymb}
+%%\usepackage{array} % tabel commands
+%%\usepackage{xspace}
+%%\usepackage{verbatim}
+%%\usepackage[english]{babel}
+%\usepackage{mathptmx}
+%\usepackage{helvet}
+%%\usepackage[T1]{fontenc}
+%%\usepackage[latin1]{inputenc}
+%%\renewcommand{\ttdefault}{lmtt}
+%%\renewcommand{\familydefault}{\rmdefault}
+%%\usepackage[T1]{fontenc}
+%%\usepackage[latin1]{inputenc}
+%%\usepackage{geometry}
+
+
+\newcommand{\noun}[1]{\textsc{#1}}
+%% Bold symbol macro for standard LaTeX users
+\providecommand{\boldsymbol}[1]{\mbox{\boldmath $#1$}}
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\newcommand{\ls}{\textbf{\textsf{limSolve }}}
+\newcommand{\li}{\textbf{\textsf{LIM }}}
+\newcommand{\R}{\proglang{R }}
+\title{Matrix calculations in \proglang{R}}
+\Plaintitle{Matrix calculations in R}
+
+\Keywords{linear equations, matrices, quadratic programming, linear programming, \proglang{R}}
+
+\Plainkeywords{linear equations, matrices, quadratic programming, linear programming, R}
+
+
+\author{Karline Soetaert\\
+Centre for Estuarine and Marine Ecology\\
+Netherlands Institute of Ecology\\
+The Netherlands}
+
+\Plainauthor{Karline Soetaert}
+
+\Abstract{This document gives an overview of \R functions that deal with matrices and sets of
+linear eqautions. It includes linear and quadratic programming.
+}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Karline Soetaert\\
+  Centre for Estuarine and Marine Ecology (CEME)\\
+  Netherlands Institute of Ecology (NIOO)\\
+  4401 NT Yerseke, Netherlands
+  E-mail: \email{k.soetaert@nioo.knaw.nl}\\
+  URL: \url{http://www.nioo.knaw.nl/ppages/ksoetaert}\\
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% R/Sweave specific LaTeX commands.
+%% need no \usepackage{Sweave}
+%\VignetteIndexEntry{Matrices}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Begin of the document
+\begin{document}
+\SweaveOpts{engine=R,eps=FALSE}
+\SweaveOpts{keep.source=TRUE}
+
+<<preliminaries,echo=FALSE,results=hide>>=
+library("Matrix")
+library("SparseM")
+library("limSolve")
+options(prompt = "> ")
+
+@
+
+\maketitle
+
+\section{Introduction}
+This document deals with matrix algebra in \R.
+
+Many of the linear algebra functions are part of the R core package \citep{R2008}. However, some
+additional packages are recommended:
+\begin{itemize}
+\item \pkg{MASS}     \citep{MASS}
+\item \pkg{limSolve} \citep{Soetaert08b}
+\item \pkg{Matrix}   \citep{Matrix}
+\item \pkg{SparseM}  \citep{SparseM}
+\item \pkg{quadprog} \citep{quadprog}
+\item \pkg{lpSolve}  \citep{lpSolve}
+\end{itemize}
+
+\section{Matrix algebra - basics}
+A \textbf{matrix} is a rectangular array of numbers.
+ A matrix with m rows and n columns is said to be of order m x n;
+ (m,n) is also referred to as the dimension of the matrix.
+
+ In expanded form, a matrix is written with coefficients aij for each entry;
+ the first subscript refers to the rows, the second to the columns.
+ A matrix is often symbolized with an uppercase, bold-faced letter.
+
+\[ \textbf{A}_{2x2}  =
+\left[ {\begin{array}{*{20}c}
+   {a11} & {a12}  \\
+   {a21} & {a22}  \\
+\end{array}} \right]
+\]
+
+A matrix with column order one is called a \textbf{column vector}.
+A \textbf{row vector} is a matrix with one row and several columns.
+
+A \textbf{diagonal matrix} is one for which the values off diagonal are 0.
+
+A matrix is called \textbf{triangular} if all elements on one side of the diagonal are 0.
+An upper triangular matrix has non-zero elements only above the diagonal;
+a lower triangular matrix has non-zero elements below the diagonal:
+\[
+\left[ {\begin{array}{*{20}c}
+   2 & 0 & 0 & 0  \\
+   3 & 4 & 0 & 0  \\
+   5 & 6 & 7 & 0  \\
+   8 & 9 & {10} & {11}  \\
+\end{array}} \right]
+\]
+
+In R, matrices can be created in several ways:
+\begin{itemize}
+\item	By means of R-function \code{matrix}
+\item	By means of R-function \code{diag} which constructs a diagonal matrix
+\item	The functions \code{cbind} and \code{rbind} add columns and rows to an existing matrix, or to another vector
+\end{itemize}
+
+The statement:
+<<>>=
+A <-matrix(nrow=2,data=c(1,2,3,4))
+A
+@
+creates a matrix A, with two rows, and, as there are four elements, two columns. Note that the data are inputted as a vector (using the c() function).
+The last statement display the matrix:
+
+By default, R fills a matrix column-wise (see the example above). However, this can easily be overruled, using parameter byrow:
+<<>>=
+(M <-matrix(nrow=4, ncol=3, byrow=TRUE, data=1:12))
+@
+The names of columns and rows are set as follows:
+<<>>=
+rownames(A) <- c("x","y")
+colnames(A) <- c("c","b")
+A
+@
+Matrices can also be created by combining (binding) vectors, e.g. rowwise:
+<<>>=
+V <- 0.5:5.5
+rbind(V,sqrt(V))
+@
+A diagonal matrix is created using R-function diag:
+<<>>=
+diag(1,nrow=2)
+diag(x= 1:2,nrow =2, ncol=3)
+@
+Upper and lower triangular matrices can be created with \code{upper.tri} and \code{lower.tri}
+
+<<>>=
+m2 <- matrix(nr=4,data=1:20)
+m2[lower.tri(m2)]<-0
+m2
+@
+
+The \textbf{product} between matrices A and B, written as AB, is only defined if the
+number of columns of A equals the number of rows of B.
+The product of a matrix with order m x n with a matrix with order n x p gives a new matrix with order m x p and
+whose ij-th element equals: $\sum\limits_{k = 1}^n {a_{ik} } b_{kj}$.
+
+In R, matrix multiplication is done using \%*\%.
+<<>>=
+(A <- matrix(nrow=2,ncol=3,data=6:1))
+B <- matrix(nrow=3,ncol=4,data=1:12)
+A%*%B
+@
+
+Multiplication of a matrix \textbf{A} with a \textbf{scalar}, c, results in a new matrix with the same dimension as
+\textbf{A} and whose ij-th element equals $c \cdot a_{ij}$
+<<>>=
+2*A
+@
+
+\textbf{Addition and subtraction} can only be performed between matrices of the same order.
+It is done element by element: the resulting matrix has the same order and its ij-th element equals $a_{ij}+b_{ij}$.
+<<>>=
+A+A
+@
+
+The sum of the elements that fall on the diagonal, $\sum\limits_{i = 1}^n {a_{ii} }$ is called the \textbf{trace} of the matrix.
+<<>>=
+sum(diag(A))
+@
+The \textbf{identity matrix I} is a special form of a diagonal matrix where the diagonal elements are 1.
+
+The identity matrix plays the same role as the number 1 in scalar notation, this is:
+$AI = A = IA$
+<<>>=
+A%*%diag(3)
+@
+
+The transpose of an mxn matrix A, is a n*m matrix denoted by $A^T$ or $A'$ and having rows
+identical to the columns of A and vice-versa:
+\[A^T=
+\left[ {\begin{array}{*{20}c}
+   {a11} & {a21}  \\
+   {a12} & {a22}  \\
+\end{array}} \right]
+\]
+
+Note: $(A^T)^T=A$; $(A+B)^T=A^T +B^T$; $(A \cdot B)^T=B^T \cdot A^T$
+
+Function \code{t()} takes the matrix transpose.
+<<>>=
+(A <- matrix(nrow=2,data=1:4))
+t(A)
+@
+
+The \textbf{inverse} of a matrix A is the unique matrix $A^{-1}$ which, when multiplied with A produces the identity matrix I:
+$A \cdot A^{-1} = I$.
+The inverse can only be taken from square matrices; not all square matrices have an inverse.
+Note that $(cA)^{-1}=c^{-1} \cdot A^{-1}$; $(A \cdot B)^{-1}=B^{-1} \cdot A^{-1}$
+
+Function \code{solve()} takes the matrix inverse.
+<<>>=
+solve(A)
+solve(A)%*%A
+@
+
+An \textbf{orthogonal} matrix T is a matrix whose transpose equals its inverse:
+ \[T^T = T^{-1}\]
+Thus: $T^T \cdot T = I$, the identity matrix.
+Orthogonal matrices can be created by the QR transformation (see below).
+<<>>=
+(A  <- matrix(nrow=2,ncol=2,data=1))
+(AO <- qr.Q(qr(A), complete = TRUE))
+ AO%*%t(AO)
+@
+\section{Eigenvalues and eigenvectors, determinants}
+Given a square (m x m) real matrix A, an \textbf{eigenvalue} $\lambda$ is a scalar for which:
+$A \cdot x = \lambda x$  for $x \neq 0$:
+
+\[
+\begin{array} {*{20}l}
+a_{11}\cdot x_1+a_{12}\cdot x_2  + \ldots a_{1n}\cdot x_n=\lambda \cdot x_1\\
+a_{21}\cdot x_1+a_{22}\cdot x_2  + \ldots a_{2n}\cdot x_n=\lambda \cdot x_2\\
+\ldots \\
+a_{n1}\cdot x_1+a_{n2}\cdot x_2  + \ldots a_{nn}\cdot x_n= \lambda \cdot x_n
+\end{array}
+\]
+
+x is called the \textbf{(right) eigenvector} of A for the eigenvalue $\lambda$;
+the eigenvector is defined only up to a scaling factor.
+
+Note: the eigenvalues of $A^{-1}$ are the reciprocals of the eigenvalues of A.
+
+For symmetric A the eigenvalues are real (otherwise they might be complex numbers).
+A matrix A is said to be \textbf{nonsingular} if it has only nonzero eigenvalues.
+A matrix is \textbf{positive definite} if all of its eigenvalues are positive.
+
+The \textbf{determinant} of a matrix is the product of its eigenvalues.
+
+In R the eigenvalue and (right) eigenvectors of a matrix are calculated by funcion \code{eigen}.
+It returns a list that contains both the eigenvalues ($values) and the eigenvectors ($vectors).
+The latter are represented by the columns of the matrix.
+<<>>=
+(er <- eigen(A))
+A%*%er$vectors[,1]-er$values[1]*er$vectors[,1]
+A%*%er$vectors[,2]-er$values[2]*er$vectors[,2]
+@
+The next 3 lines contain the same calculations as above, now for the \textbf{left eigen vectors} of A.
+<<>>=
+(el <- eigen(t(A)))
+el$vectors[,1]%*%A-el$values[1]*el$vectors[,1]
+el$vectors[,2]%*%A-el$values[2]*el$vectors[,2]
+@
+Finally the determinant of A is outputted.
+<<>>=
+det(A)
+@
+
+\section{linear equations}
+The n linear equations in the m unknowns x
+\[
+\begin{array} {*{20}l}
+a_{11} \cdot x_1+a_{12} \cdot x_2  + \ldots a_{1n} \cdot x_n=b_1 \\
+\ldots                                                           \\
+a_{m1} \cdot x_1+a_{m2} \cdot x_2  + \ldots a_{mn} \cdot x_n=b_m
+\end{array}
+\]
+
+can be written in matrix form:
+\[\mathbf{A}\cdot \mathbf{x}=\mathbf{b}\]
+
+Where \textbf{A(mxn)} is called the coefficient matrix, vector \textbf{x} contains the unknowns and
+\textbf{b} is called the right hand side.
+
+Vectors \textbf{x1}, ... \textbf{xN} are called \textbf{linearly dependent} if there exist numbers
+l1,... lN, all non-zero, such that l1x1+  ... + lNxN = 0
+
+The vectors are \textbf{linearly independent} if no such numbers can be found.
+The \textbf{rank} of a matrix is the minimum of the maximum number of linearly independent rows or maximum number of linearly independent columns). It is denoted by r(A) or rank(A). Note that for a matrix A(m x n): 0 ? r(A) ?min(m,n)
+
+If A is square and positive definite, the solution of the linear system $Ax = b$ is done using R's function \code{solve}:
+<<>>=
+A <- matrix(nrow=2,data=1:4)
+B <- c(5,6)
+X <- solve(A,B)
+
+A%*%X-B
+@
+To estimate the rank of matrix, it is easiest to use the QR decomposition.
+Alternatively, the singular value decomposition can be used (see below).
+<<>>=
+A <- matrix(nrow=4,ncol=4,data=c(1:8,6,8,10,12,1:4))
+qr(A)$rank
+@
+
+\section{Singular value decomposition and the generalized inverse}
+
+The \textbf{singular value decomposition} (SVD), sometimes called the spectral decomposition,
+ is a very important decomposition, used for various purposes.
+
+It forms the basis of the generalized inverse, also known as the Moore-Penrose generalized inverse, or the g-inverse of a matrix.
+
+An m x n matrix A can be decomposed as:
+\[A = U \cdot D\cdot V^T\]
+where
+
+$U_{(m x p)}$ and $V_{(n x p)}$ are column-orthonormal matrices,
+i.e. they satisfy : $U \cdot U^T=I$ and $V \cdot V^T=I$,
+
+I is the identity matrix of appropriate dimension.
+
+U contains the left singular vectors, V the right singular vectors and
+
+D(p x p)  is a diagonal matrix containing the 'singular values $\sigma_i$, which are positive values,
+generally arranged in decreasing order, i.e. $D = diag(\sigma_1,\sigma_2,\ldots \sigma_p) with \sigma_1\geq \sigma_2 \geq , \ldots \geq \sigma_p$.
+Here p is the minimum of (m,n), i.e. the initial 'guess' of the rank of matrix A.
+
+The  \textbf{generalized inverse} of a matrix A, denoted by $A^-$ is one for which $A \cdot A^- \cdot A=A$.
+
+In contrast to the inverse $A^{-1}$, which only exists for certain square matrices,
+the generalized inverse always exists although it need not be unique.
+
+It is constructed by singular value decomposition as follows:
+
+If $A = U\cdot D \cdot V^T$
+
+Then $A^- =V_{(n x r)} \cdot D_{(n x r)}^{-1} \cdot U_{(m x r)}^T$
+
+And where $D_{(r x r)}^{-1}= diag(1/\sigma_1,1/\sigma_2,\ldots 1/\sigma_r$.
+
+Here the matrices $U_{(m x r)}$, $D_{(r x r)}$ and $V_{(n x r)}$ use the actual (or better estimated)
+rank r of the matrix A, which can be smaller than p.
+
+The rank r is estimated by counting the number of non-zero singular values in D.
+
+
+Notes:
+\begin{itemize}
+\item In order to count a singular value as zero, we have to decide on the tolerance to use, generally this is taken as a very small number
+(e.g. the root of machine precision in the order of 1e-8) i.e. 1e-3 would not, 1e-10 would be considered sufficiently small.
+\item The approximation $A \simeq U_{(m x r)} D_{(n x r)}^{-1} V_{(n x r)}^T$ is called the low-rank or truncated singular value decomposition of A.
+If singular values are truncated at sufficiently low values, the approximation will be near exact.
+\item If the inverse of A exists, the generalized inverse is equal to the inverse.
+\end{itemize}
+
+The generalized inverse forms the basis of solving any set of linear equations.
+A particular solution of the equation A x = b, where A is an m x n matrix, using the generalized inverse is written as:
+$x = A^- \cdot b$
+
+We consider 3 cases.
+\begin{itemize}
+\item
+ $m=n=rank(A)$, there are as many equations as unknowns.
+In this case, $A^- = A^{-1}$ and the solution is unique and given by:
+$x = A^{-1}\cdot b$
+
+\item $m>n\geq rank(A)$, there are more equations than unknowns.
+The equations are said to be overdetermined.
+The generalized inverse solution is the one that minimizes the sum of squared residuals,
+i.e. $min (\|A x - b\|^2$).
+
+\item $m<n\leq rank(A)$, there are more unknowns than equations.
+The system is said to be underdetermined, and there are an infinite number of solutions.
+The particular generalized inverse solution is the one that minimizes the sum of squared x's,
+i.e.$\min (\| x \|^2)$. This solution is often called the 'parsimonious' solution.
+
+A more general set of solutions is given by:
+$X = A^- \cdot B + (I- A^- \cdot A) \cdot z$
+Where z is a vector of length n, with arbitrary numbers
+\end{itemize}
+
+The 'data' resolution matrix $A \cdot A^-$ describes how well the equations match the data.
+The elements on the diagonal denote the importance of the equations in determining the values of the unknowns.
+Values less than 1 indicate that the equations are not fully independent.
+
+The 'model' resolution matrix $A^-\cdot A$ characterizes whether the unknowns can be uniquely determined.
+A value on the diagonal less than 1 indicates that the unknowns are not fully constrained.
+
+
+In the \R-script below, a rectangular matrix is created (1st line),
+the singular value decomposition taken and shown (2nd line).
+The machine precision (3rd line) is then used to select the singular values
+that are sufficiently large (i.e. larger than the precision, 4th line).
+The rank of the matrix is then the number of sufficiently large singular values (5th line).
+
+
+<<>>=
+A <- matrix(nrow=4,ncol=3,data=c(1:8,6,8,10,12))
+(s      <- svd(A))
+tol     <- sqrt(.Machine$double.eps)
+nonzero <- which(s$d > tol * s$d[1])
+rank    <- length(nonzero)
+@
+The generalized inverse is taken, and right- and left multiplied with A,
+which returns the original matrix.
+<<>>=
+gA  <- s$v[,nonzero] %*% (t(s$u[,nonzero])/s$d[nonzero])
+
+A %*% gA %*% A
+@
+
+After creating a vector B, which forms the right hand side of the linear set
+of equations $A\cdot x=B$, the parsimonious solution is calculated
+The third line checks if the residuals are indeed 0.
+Finally, the resolutions of equations and variables are estimated.
+<<>>=
+B <- 0:3
+X <- gA %*% B
+A %*% X - B                           # should be zero
+
+res.eq   <- diag(A %*%gA)
+res.var  <- diag(gA%*% A)
+@
+The previous calculations can also be done using functions from package \ls.
+<<>>=
+Solve(A,B)
+resolution(A)
+@
+
+\section{Other matrix decompositions}
+
+\subsection{QR}
+One important decomposition is the QR decomposition, which decomposes a
+rectangular matrix A into an upper triangular matrix R and an orthogonal matrix Q:
+\[A = Q \cdot R\]
+As Q is orthogonal, it follows that $Q^T \cdot Q=I$.
+The cholesly decomposition was used above to estimate the rank of a matrix.
+
+\subsection{Cholesky decomposition}
+The cholesky decomposition takes the 'square root' of a square matrix.
+\[A = R^T \cdot R\]
+Similarly as a real root of a negative number does not exist, matrix A
+has to obey certain characteristics in order for its square root to exist;
+this is A has to be positive definite.
+Note that sometimes, the cholesky decomposition may fail when it should not.
+Adding a tiny value on the diagonal helps to remedy this:
+<<>>=
+(A  <- matrix(nrow=2,ncol=2,data=1))
+#chol(A)                                   # fails
+diag(A) <- diag(A) +  .Machine$double.eps
+sqA     <- chol(A)                         # works
+t(sqA)%*%sqA
+@
+
+\subsection{lu decomposition}
+The LU decomposition writes a matrix as the product of a lower and upper triangular matrix.
+
+LU decomposition is available from package \pkg{Matrix}
+
+(Karline: give an example...)
+
+\section{linear equality and inequality equations}
+There are many problems where linear equations are supplemented with linear inequality constraints that have to be met.
+Formally, the problem can be specified as:
+\begin{align*}
+      \min(f(\mathbf{x})) \qquad or \qquad \max(f(\mathbf{x}))(1)\\
+      \mathbf{E}\cdot \mathbf{x}=\mathbf{f}      \qquad  (2)\\
+      \mathbf{G}\cdot \mathbf{x}\geq\mathbf{h}   \qquad  (3)
+\end{align*}
+
+where \textbf{x} is the vector with the unknowns and either \textbf{E} and/or \textbf{G} may be empty.
+The function $f(\mathbf{x})$ which has to be minimized or maximized need not be linear.
+\subsection{Quadratic programming}
+In case the cost function is quadratic, the problem is called a least squares problem with equality and inequality conditions (LSEI):
+
+\begin{align*}
+      \min(\| \mathbf{A} \cdot \mathbf{x} - \mathbf{b} \|^2) \qquad (1)\\
+      \mathbf{E}\cdot \mathbf{x}=\mathbf{f}      \qquad  (2)\\
+      \mathbf{G}\cdot \mathbf{x}\geq\mathbf{h}   \qquad  (3)
+\end{align*}
+
+Some of the equations must be exactly satisfied ($\mathbf{Ex=f}$), whilst others do not ($\mathbf{Ax=b}$),
+and where in addition certain inequality constraints need to be satisfied.
+
+It is solved by quadratic programming techniques.
+
+The formalism $\| \|^2$, is also called the L2 norm.
+
+The L2 norm can be rewritten as:
+\[
+\begin{array}{c}
+ \left\| {Ax - b} \right\|^2  = \left( {Ax - b} \right)^T \left( {Ax - b} \right) \\
+  = b^T b + x^T A^T Ax - 2b^T Ax \\
+ \end{array}
+\]
+
+As the first term does not contain the unknown \textbf{x}, it can be ignored such that
+\[
+\begin{array}{l}
+ \min \left\| {Ax - b} \right\|^2  = \min (\frac{{x^T Dx}}{2} - p^T x) \\
+ D = A^T A \\
+ p^T  = b^T A \\
+ \end{array}
+\]
+
+Thus, LSEI problems can be inputted either using matrix \textbf{A} and vector \textbf{b} or matrix \textbf{D} and vector \textbf{p}.
+
+Functions \code{lsei} from package \pkg{limSolve} uses the first formalism, while
+function \code{solve.QP} uses the second formalism.
+
+Karline:example in R
+\subsection{Linear programming}
+In case the function to be minimised or maximise is linear, the problem can be
+ solved with linear programming algorithms. They also assume that all x>0.
+
+ \begin{align*}
+      \min(\sum\limits_i {a_i x_i }) \qquad  or \qquad \max(\sum\limits_i {a_i x_i }) \qquad(1)\\
+      \mathbf{E}\cdot \mathbf{x}=\mathbf{f}      \qquad  (2)\\
+      \mathbf{G}\cdot \mathbf{x}\geq\mathbf{h}   \qquad  (3)
+\end{align*}
+
+A robust linear programming function, \code{lp} can be found in package \pkg{lpSolve}.
+
+
+\clearpage
+\bibliography{vignettes}
+
+\end{document}
