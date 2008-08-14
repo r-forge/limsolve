@@ -519,7 +519,8 @@ qr.Q(qrA) %*% qr.R(qrA) #Q R = A
 @
 
 \subsection{Cholesky decomposition}
-The cholesky decomposition takes the 'square root' of a square matrix.
+The cholesky decomposition takes the 'square root' of a square matrix, i.e.
+it transforms a matrix in the product of a matrix with its transpose:
 \[A = R^T \cdot R\]
 Similarly as a real root of a negative number does not exist, matrix A
 has to obey certain characteristics in order for its square root to exist:
@@ -536,7 +537,8 @@ t(sqA)%*%sqA
 @
 
 \subsection{lu (lower-upper) decomposition}
-The LU decomposition writes a matrix as the product of a lower and upper triangular matrix.
+The LU decomposition writes a matrix as the product of a permutation of a lower
+triangular matrix and of an upper triangular matrix.
 
 In \R, LU decomposition is available by function \code{lu} from package \pkg{Matrix}.
 
