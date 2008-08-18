@@ -305,8 +305,9 @@ linp <- function(E=NULL, # numeric matrix containing the coefficients of the equ
                  G=NULL, # numeric matrix containing the coefficients of the inequality constraints G*X>=H
                  H=NULL, # numeric vector containing the right-hand side of the inequality constraints
                  Cost,   # numeric vector containing the coefficients of the cost function
-                 verbose=TRUE,       # Logical to print error message
-                 ...)                 # extra arguments passed to R-function lp
+                 ispos=TRUE,    #
+                 verbose=TRUE,  # Logical to print error message
+                 ...)           # extra arguments passed to R-function lp
  
 #------------------------------------------------------------------------
 # Solves a linear programming problem, 
@@ -366,11 +367,19 @@ rhs   <- c(rhs,H)
 dir   <- c(dir,rep(">=",Nin))
 }
 
+if (!ispos)
+{
+con  <- cbind(con, -con)
+Cost <- c(Cost, -Cost)
+}
+
 # the solution
 sol    <- lp("min",Cost,con,dir,rhs,...)
 mode   <- sol$status
 if (mode == 2) {print("no feasible solution");IsError<-TRUE}
+if (mode == 3) {print("error");IsError<-TRUE}
 X           <- sol$solution
+if (!ispos) X <- X[1:Nx]-X[(Nx+1):(2*Nx)]
 solutionNorm<- sol$objval
 
 # Total residual norm
@@ -680,9 +689,9 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         dir <- c(dir, rep(">=", Nineq))
       }
     
-    AllX <- NULL
+    AllX   <- NULL
     Summed <- rep(0,Nx)
-    nsum <- 0
+    nsum   <- 0
 
     if (ispos) {
 

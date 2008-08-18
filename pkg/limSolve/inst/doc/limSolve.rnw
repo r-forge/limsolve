@@ -470,27 +470,13 @@ H <- c(-1, 2, 1)
 Cost <- c(1,2,-1,4)
 linp(E,F,G,H,Cost)
 @
-The positivity requirement ($x_i \geq 0$) is -by default- part of the linear programming problem.
-
-In case the unknowns need not be positive, they are rewritten as the difference of
-two positive unknowns as follows:
-\[
-x_i = {x_i}^a -{x_i}^b
-\]
-where both ${x_i}^a$ and ${x_i}^b$ are positive quantities, but where ${x_i}$ can be
-negative (if ${x_i}^a<{x_i}^b$.
-
-The linear programming problem is then rewritten as a function of these new unknowns
-as follows:
+The positivity requirement ($x_i \geq 0$) is -by default- part of the linear programming problem,
+unless it is toggled off (by setting argument \code{ispos} equal to FALSE.
 
 <<linp 2>>=
-EE <- cbind(E,-E)
-GG <- cbind(G,-G)
-CCost <- c(Cost, -Cost)
-lp <-linp(E=EE,F=F,G=GG, H= H, Cost=CCost)
-X <- lp$X[1:4]-lp$X[5:8]
-X
-lp$solutionNorm
+LP <-linp(E=E,F=F,G=G, H= H, Cost=Cost, ispos=FALSE)
+LP$X
+LP$solutionNorm
 @
 
 \section{datasets}
