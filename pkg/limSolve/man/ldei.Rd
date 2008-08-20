@@ -2,21 +2,20 @@
 \alias{ldei}
 \title{Weighted Least Distance Programming with equality and inequality constraints}
 \description{Solves the following \bold{underdetermined} inverse problem:
- \deqn{\min(\sum {w_i*x_i}^2)} subject to        
+ \deqn{\min(\sum {x_i}^2)} subject to
  \deqn{Ex=f}
  \deqn{Gx>=h}
- \cr and where \code{wi} are weighting coefficients, default weights are 1
- \cr uses least distance programming subroutine ldp (FORTRAN) from Linpack
+
+ uses least distance programming subroutine ldp (FORTRAN) from Linpack
 
   The model has to be UNDERdetermined, i.e. the number of independent equations < number of unknowns.}
-\usage{ldei(E, F, G=NULL, H=NULL, Wx=rep(1,times=ncol(E)), 
+\usage{ldei(E, F, G=NULL, H=NULL,
 tol=sqrt(.Machine$double.eps), verbose=TRUE)}
 \arguments{
   \item{E }{numeric matrix containing the coefficients of the equality constraints \eqn{Ex=F}; if the columns of E have a names attribute, they will be used to label the output}
   \item{F }{numeric vector containing the right-hand side of the equality constraints}
   \item{G }{numeric matrix containing the coefficients of the inequality constraints \eqn{Gx>=H}; if the columns of G have a names attribute and columns of E do not, they will be used to label the output}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
-  \item{Wx }{numeric vector with weighting coefficients of the quadratic function to be minimised (length = number of unknowns)}
   \item{tol }{tolerance (for singular value decomposition, equality and inequality constraints)}
   \item{verbose }{logical to print ldei error messages}
 }
