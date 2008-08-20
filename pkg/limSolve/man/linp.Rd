@@ -7,13 +7,18 @@
  \deqn{Gx>=h}
  \deqn{x_i>=0} (optional)
 
- 
+
  This function is simply a wrapper around \code{\link[lpSolve]{lp}} (see note) from package lpSolve, written to be consistent with the
- other functions \code{lsei}, and \code{ldei}. }
-\note{The function \code{lp} may fail and terminate R for very small problems that are repeated frequently...
- \cr Also note that sometimes multiple solutions exist for the same problem.}
+ other functions \code{lsei}, and \code{ldei}.
+}
+\note{
+If the requirement of nonnegativity are relaxed, then strictly speaking the problem is not a linear programming problem.
+
+The function \code{lp} may fail and terminate R for very small problems that are repeated frequently...
+
+Also note that sometimes multiple solutions exist for the same problem.}
 \usage{linp(E=NULL, F=NULL, G=NULL, H=NULL, Cost,
-            ispos = TRUE, verbose=TRUE, ...)}
+            ispos = TRUE, int.vec=NULL, verbose=TRUE, ...)}
 \arguments{
   \item{E }{numeric matrix containing the coefficients of the equality constraints \eqn{Ex=F}; if the columns of E have a names attribute, they will be used to label the output}
   \item{F }{numeric vector containing the right-hand side of the equality constraints}
@@ -21,6 +26,7 @@
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
   \item{Cost }{numeric vector containing the coefficients of the cost function; if the Cost a names attribute, and neither the columns of E nor G have a name, they will be used to label the output}
   \item{ispos}{logical, when TRUE then unknowns must be positive (this is the original linear programming problem)}
+  \item{int.vec} {when not NULL, Numeric vector giving the indices of variables that are required to be integer. The length of this vector will therefore be the number of integer variables.}
   \item{verbose }{logical to print error messages}
   \item{... }{extra arguments passed to R-function \code{lp}}
 }

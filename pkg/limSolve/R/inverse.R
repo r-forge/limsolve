@@ -47,7 +47,6 @@ ldei <- function(E,      # numeric matrix containing the coefficients of the equ
                 F,       # numeric vector containing the right-hand side of the equality constraints
                 G=NULL,  # numeric matrix containing the coefficients of the inequality constraints G*X>=H
                 H=NULL,  # numeric vector containing the right-hand side of the inequality constraints
-                Wx=rep(1,times=ncol(E)),        # Weight coefficients of the quadratic function (the xs) to be minimised
                 tol=sqrt(.Machine$double.eps),  # Tolerance (for singular value decomposition, equality and inequality constraints)
                 verbose=TRUE)                   # Logical to print ldei error message
 
@@ -70,19 +69,15 @@ Nin    <- nrow(G)   # number of inequalities
 EE <- E
 GG <- G
 
-# Correct flows for weights Wx; every column multiplied with same weight
-E      <- t(t(E) * Wx)
 
 # Consistency of input
 if (!is.null(G)) 
 {
 if (ncol(G)   != Nx)  stop("cannot solve least distance problem - E and G not compatible")
 if (length(H) != Nin) stop("cannot solve least distance problem - G and H not compatible")
-G      <- t(t(G) * Wx)
 }
 
 if (length(F) != Neq) stop("cannot solve least distance problem - E and F not compatible")
-if (length(Wx) != Nx) stop("cannot solve least distance problem - Wx and E not compatible")
 
 
 #------------------------------------------------------------------------
@@ -115,7 +110,7 @@ ifelse (!is.null(G), CC        <- G%*%Xb-H, CC<-0)
 
 if (all(CC > -tol))     # done
  {
- X    <- Xb * Wx
+ X    <- Xb
  IsError <-FALSE
  } else   {
 
@@ -150,7 +145,6 @@ if (all(CC > -tol))     # done
 
  # The solution, corrected for weights
  X    <- ortho[,1:unsolvable] %*% as.matrix(sol$X) + Xb
- X    <- X * Wx
  X[which(abs(X)<tol)] <- 0         # zero very tiny values
  
          } # end CC > - tol
@@ -165,14 +159,14 @@ if (all(CC > -tol))     # done
  residual <- sum(abs(EE %*% X - F))+residin
 
  # The solution norm
- solution <- sum ((Wx*X)^2)
+ solution <- sum ((X)^2)
 X    <- as.vector(X)
 xnames <- colnames(E)
 if (is.null(xnames)) xnames <- colnames(G)
 names (X) <- xnames
 
 return(list(X=X,                            # vector containing the solution of the least distance problem.
-            unconstrained.solution=as.vector(Xb * Wx),  # vector containing the unconstrained solution of the least distance problem
+            unconstrained.solution=as.vector(Xb),  # vector containing the unconstrained solution of the least distance problem
             residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
             solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
             IsError=IsError,                # if an error occurred
@@ -306,6 +300,7 @@ linp <- function(E=NULL, # numeric matrix containing the coefficients of the equ
                  H=NULL, # numeric vector containing the right-hand side of the inequality constraints
                  Cost,   # numeric vector containing the coefficients of the cost function
                  ispos=TRUE,    #
+                 int.vec=NULL,  # Numeric vector giving the indices of variables that are required to be integer. The length of this vector will therefore be the number of integer variables.
                  verbose=TRUE,  # Logical to print error message
                  ...)           # extra arguments passed to R-function lp
  
@@ -331,7 +326,7 @@ Neq  <- nrow(E)   # Number equalities
 Nx   <- ncol(E)   # Number unknowns
 Nin  <- nrow(G)   # Number inequalities
 
-if (is.null(Nx )) Nx <- ncol(G)
+if (is.null(Nx )) Nx  <- ncol(G)
 if (is.null(Nin)) Nin <- 0
 if (is.null(Neq)) Neq <- 0
 
@@ -371,10 +366,11 @@ if (!ispos)
 {
 con  <- cbind(con, -con)
 Cost <- c(Cost, -Cost)
+if (! is.null(int.vec)) int.vec<-c(int.vec,int.vec+Nx)
 }
 
 # the solution
-sol    <- lp("min",Cost,con,dir,rhs,...)
+sol    <- lp("min",Cost,con,dir,rhs,int.vec=int.vec,...)
 mode   <- sol$status
 if (mode == 2) {print("no feasible solution");IsError<-TRUE}
 if (mode == 3) {print("error");IsError<-TRUE}
@@ -415,8 +411,8 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
                  G=NULL,                     # numeric matrix containing the coefficients of the inequality constraints, Gx>=H
                  H=NULL,                     # numeric vector containing the right-hand side of the inequality constraints
                  Wx=NULL,                    # x-Weighting coefficients 
-                 Wa=NULL,                    # weights of the quadratic function (A, b matrix) to be minimised 
-                 type = 1,                        # integer code determining algorithm to use 1=lsei , 2=solve.QP from R-package quadprog 
+                 Wa=NULL,                    # weights of the quadratic function (A, b matrix) to be minimised
+                 type = 1,                        # integer code determining algorithm to use 1=lsei , 2=solve.QP from R-package quadprog
                  tol=sqrt(.Machine$double.eps),   # Tolerance (for singular value decomposition, equality and inequality constraints)
                  tolrank=NULL,   # Tolerance for equations
                  fulloutput = FALSE, 
