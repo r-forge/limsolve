@@ -330,7 +330,7 @@ if (is.null(Nx )) Nx  <- ncol(G)
 if (is.null(Nin)) Nin <- 0
 if (is.null(Neq)) Neq <- 0
 
-NumEq <- Nin+Neq  # total number of simplex equations
+NumEq <- Nin+Neq  # total number of equations
 
 # consistency of input
 if (!is.null(G)) 
@@ -395,7 +395,7 @@ return(list(X=X,                        # vector containing the solution of the 
             residualNorm=residual,      # scalar, the sum of residuals of equalities and violated inequalities
             solutionNorm=solutionNorm,  # scalar, the value of the minimised cost function
             IsError=IsError,            # if an error occurred
-            type="simplex"))
+            type="linp"))
 
 } ########## END OF linp ##########                 
 
