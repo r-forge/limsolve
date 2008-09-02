@@ -35,7 +35,7 @@ The Netherlands}
 
 \Plainauthor{Karline Soetaert, Karel Van den Meersche, Dick van Oevelen}
 
-\Abstract{ \R package \ls \citep{Soetaert08b} solves linear inverse models (LIM), consisting
+\Abstract{ \R package \ls \citep{limSolve} solves linear inverse models (LIM), consisting
 of linear equality and or linear inequality conditions, which may be supplemented with
 approximate linear equations, or a target (cost, profit) function.
 Depending on the determinacy of these models, they can be solved by least squares
@@ -142,9 +142,11 @@ F <- c(2,1,8)
 solve(E,F)
 Solve(E,F)
 @
-In the next example, an additional equation, which is a linear comination of the first two
-is added to the model (i.e. $eq_4=eq_1+eq_2$). This problem is therefore equivalent to the previous one;
-it is even determined although it contains 4 equations and only 3 unknowns.
+In the next example, an additional equation, which is a linear combination of the first two
+is added to the model (i.e. $eq_4=eq_1+eq_2$).
+
+As one set of equations is redundant, this problem is equivalent to the previous one.
+It is even determined although it contains 4 equations and only 3 unknowns.
 
 As the input matrix is not square, this model can only be solved with function \code{Solve}
 \[
@@ -160,8 +162,8 @@ As the input matrix is not square, this model can only be solved with function \
 \]
 
 <<even determined2>>=
-E2 <- rbind(E,c(4,2,1))
-F2 <- c(F,3)
+E2 <- rbind(E,E[1,]+E[2,])
+F2 <- c(F,F[1]+F[2])
 
 #solve(E2,F2) # error
 Solve(E2,F2)
@@ -172,14 +174,16 @@ Solve(E2,F2)
 Overdetermined linear systems contain more independent equations than unknowns.
 In this case, there is only one solution in the least squares sense, i.e. a solution
 that satisfies:
+\[\min\limits_x\| \mathbf{A} \cdot \mathbf{x} - \mathbf{b} \|^2\].
 
-$\min_{x}\| \mathbf{A} \cdot \mathbf{x} - \mathbf{b} \|^2$.
+The least squares solution can be singled out by function \code{lsei} (\emph{l}east \emph{s}quares
+with \emph{e}qualities and \emph{i}nequalities).
 
-The least squares solution can be singled out by function \emph{lsei} (\emph{l}east \emph{s}quares
-with \emph{e}qualities and \emph{i}nequalities). This function also returns the
+If argument \code{fulloutput} is \code{TRUE}, this function also returns the
 parameter covariance matrix, which gives indication on the
 confidence interval and relations among the estimated unknowns.
 
+\subsection{Equalities only}
 If there are no inequalities, then the least squares solution can also be estimated with \code{Solve}.
 
 The following problem:
@@ -200,18 +204,25 @@ A <- matrix(nrow=4,ncol=3,
             data=c(3,1,2,0,2,0,0,1,1,0,2,0))
 B <- c(2,1,8,3)
 
-lsei(A=A,B=B)
+lsei(A=A,B=B,fulloutput=TRUE)
 @
 Here the \emph{residualNorm} is the sum of absolute values of the residuals of
-the equalities that have to be met exactly and of the violated inequalities. As in this
+the equalities that have to be met exactly ($\mathbf{E} \cdot \mathbf{x} = \mathbf{f}$)
+and of the violated inequalities ($\mathbf{G} \cdot \mathbf{x} \geq \mathbf{h}$). As in this
 case, there are none of those, this quantity is 0.
+
 The \emph{solutionNorm} is the value of the minimised quadratic function at the solution, i.e. the value of $\| \mathbf{A} \cdot \mathbf{x} - \mathbf{b} \| ^2$.
+
+The \emph{covar} is the variance-covariance matrix of the unknowns.
+\emph{RankEq} and \emph{RankApp} give the rank of the equalities and of the approximate
+equalities respectively.
 
 Alternatively, the problem can be solved by \code{Solve}:
 <<over2>>=
 Solve(A,B)
 @
 
+\subsection{Equalities and inequalities}
 If, in addition to the equalities, there are also inequalities, then \code{lsei} is
 the only method to find the least squares solution.
 
@@ -229,18 +240,7 @@ H <- c(-3,2)
 lsei(A=A,B=B,G=G,H=H)
 @
 
-It is also possible to merge equalities that have to be matched exactly with equations that
-have to be approximated as closely as possible:
-<<over2 with ineq>>=
-E <- c(0,1,0)
-F <- 3
-
-lsei(E=E,F=F,A=A,B=B,G=G,H=H)
-@
-Note that for the case above, it is also possible to perform Bayesian sampling,
-using \ls function \code{xsample} (see below).
-
-\section{Undetermined systems}
+\section{Underdetermined systems}
 Underdetermined linear systems contain less independent equations than unknowns.
 If the equations are consistent, there exist an infinite amount of
 solutions. To solve such models, there are several options:
@@ -267,10 +267,9 @@ We start with an example including only equalities.
 \]
 \end{center}
 
-Functions \code{Solve} and \code{ldei} retrieve the parsimonious solution.
+Functions \code{Solve} and \code{ldei} retrieve the \textbf{parsimonious} solution, i.e. the solution for which
+$\sum x_i^2$ is minimal.
 
-It is slightly more complex to select the parsimonious solution using \code{lsei}.
-Here the approximate equations (\textbf{A}, the identity matrix, and \textbf{b}) have to be specified.
 <<label=u1a>>=
 E <- matrix(nrow=2, ncol=3,
             data=c(3,1,2,0,1,0))
@@ -278,10 +277,17 @@ F <- c(2,1)
 
 Solve(E,F)
 ldei(E=E,F=F)$X
+@
 
+
+It is slightly more complex to select the parsimonious solution using \code{lsei}.
+Here the approximate equations (\textbf{A}, the identity matrix, and \textbf{b}) have to be specified.
+<<>>=
 lsei(E=E,F=F,A=diag(3),B=rep(0,3))$X
 @
-In this particular case, it is also possible to randomly sample the solution space.
+
+
+It is also possible to \textbf{randomly sample} the solution space.
 This demonstrates that all valid solutions of $x_2$ and $x_3$ are located on a line (figure \ref{fig:u1b}).
 <<label=u1b,include=FALSE>>=
 xs <- xsample(E=E,F=F,iter=500)$X
@@ -299,8 +305,6 @@ plot(xs[,2],xs[,3])
 \end{figure}
 
 \subsection{Equalities and inequalities}
-The next example also includes inequalities:
-
 Consider the following set of linear equations:
 \begin{center}
 \[
@@ -321,7 +325,7 @@ complemented with the inequalities:
 \]
 \end{center}
 
-As before, the parsimonious solution can be found by functions \code{ldei} and \code{lsei}.
+As before, the \textbf{parsimonious} solution (that minimises the sum of squared flows) can be found by functions \code{ldei} and \code{lsei}.
 
 <<>>=
 E <- matrix(ncol=4, byrow=TRUE,
@@ -332,13 +336,15 @@ G <-matrix(ncol=4,byrow=TRUE,
            data=c(2,1,1,1,-1,3,2,1,-1,0,1,0))
 H <- c(-1, 2, 1)
 ldei(E,F,G=G,H=H)$X
-(pars<-lsei(E,F,G=G,H=H,A=diag(nr=4),B=rep(0,4))$X)
+(pars<-lsei(E,F,G=G,H=H,A=diag(nrow=4),B=rep(0,4))$X)
 @
-We can also estimate the minimal and maximal values of all unknowns using function \code{xranges}.
-The results are conveniently plotted using \R function \code{dotchart} (figure \ref{fig:dc})
+
+We can also estimate the \textbf{ranges} (minimal and maximal values) of all unknowns using function \code{xranges}.
 <<>>=
 (xr<-xranges(E,F,G=G,H=H))
 @
+The results are conveniently plotted using \R function \code{dotchart} (figure \ref{fig:dc}).
+We plot the parsimonious solution as a point, the range as a horizontal line.
 <<label=dc, include=FALSE>>=
 dotchart(pars,xlim=range(c(pars,xr)),label=paste("x",1:4,""))
 segments(x0=xr[,1],x1=xr[,2],y0=1:nrow(xr),y1=1:nrow(xr))
@@ -353,11 +359,13 @@ segments(x0=xr[,1],x1=xr[,2],y0=1:nrow(xr),y1=1:nrow(xr))
 \label{fig:dc}
 \end{figure}
 
-Function \code{xsample} randomly samples the underdetermined problem.
+A \textbf{random sample} of the infinite amount of solutions is generated by function \code{xsample}.
 For small problems, the coordinates directions algorithm ("cda") is a good choice.
-
-We use \R function \code{pairs}, with a density function on the diagonal,
- to visualise the output (figure \ref{fig:u2}).
+<<>>=
+xs <- xsample(E=E,F=F,G=G,H=H,type="cda")$X
+@
+To visualise its output, we use \R function \code{pairs}, with a density function on the diagonal,
+and without plotting the upper panel (figure \ref{fig:u2}).
 <<label=u2,include=FALSE>>=
 panel.dens <- function(x, ...)
 {
@@ -366,7 +374,6 @@ panel.dens <- function(x, ...)
     DD <- density(x); DD$y<- DD$y/max(DD$y)
     polygon(DD,col="grey")
 }
-xs <- xsample(E=E,F=F,G=G,H=H,type="cda")$X
 pairs(xs,pch=".",cex=2,upper.panel=NULL,diag.panel=panel.dens)
 @
 
@@ -379,6 +386,21 @@ pairs(xs,pch=".",cex=2,upper.panel=NULL,diag.panel=panel.dens)
 \caption{Random sample of the underdetermined system including equalities and inequalities. See text for explanation.}
 \label{fig:u2}
 \end{figure}
+
+Assume that we define the following variable:
+\[v_1=x_1+2 \cdot x_2 - x_3 +x_4 +2\]
+
+We can use functions \code{varranges} and \code{varsample} to estimate its ranges and create a random sample respectively.
+
+Variables are written as a matrix equation:
+\[\mathbf{Va}\cdot \mathbf{x}=\mathbf{Vb}\]
+<<>>=
+Va<-c(1,2,-1,1)
+Vb<- -2
+varranges(E,F,G=G,H=H,EqA=Va,EqB=Vb)
+summary(varsample(xs,EqA=Va,EqB=Vb))
+@
+
 \subsection{Equalities, inequalities and approximate equations}
 The following problem
 \begin{center}
@@ -404,15 +426,14 @@ B <- c(1,2)
 
 lsei(E,F,G=G,H=H,A=A,B=B)$X
 @
-Function \code{xsample} randomly samples the underdetermined problem
-(using the metropolis algorithm), selecting
- likely values given the approximate equations. The
+Function \code{xsample} \textbf{randomly samples} the underdetermined problem
+(using the metropolis algorithm), selecting likely values given the approximate equations. The
 probability distribution of the latter is assumed Gaussian, with given standard deviation
 (argument \code{sdB}, here assumed 1).
 
-The jump length (argument \code{jmp}) is finetuned such that a sufficient number of trials (\~ 30\%), but not too many,
+The jump length (argument \code{jmp}) is finetuned such that a sufficient number of trials (\~ ~30\%), but not too many,
 is accepted. Note how the ultimate distribution is determined both by the inequality constraints
-(the shart edges) as well as by the approximate equations (figure \ref{fig:u3}).
+(the sharp edges) as well as by the approximate equations (figure \ref{fig:u3}).
 
 <<label=u3,include=FALSE>>=
 panel.dens <- function(x, ...)
@@ -435,9 +456,10 @@ pairs(xs,pch=".",cex=2,upper.panel=NULL,diag.panel=panel.dens)
 and approximate equations. See text for explanation.}
 \label{fig:u3}
 \end{figure}
+
+
+
 \subsection{Equalities and inequalities and a target function}
-In previous section, the parsimonious solution, i.e.
-the solution for which the sum of squared values is minimal was selected.
 Another way to single out one solution out of the infinite amount of
 valid solutions is by minimising or maximising a linear target function, using
 linear programming. For instance,
@@ -471,7 +493,7 @@ Cost <- c(1,2,-1,4)
 linp(E,F,G,H,Cost)
 @
 The positivity requirement ($x_i \geq 0$) is -by default- part of the linear programming problem,
-unless it is toggled off (by setting argument \code{ispos} equal to FALSE.
+unless it is toggled off by setting argument \code{ispos} equal to FALSE.
 
 <<linp 2>>=
 LP <-linp(E=E,F=F,G=G, H= H, Cost=Cost, ispos=FALSE)
@@ -483,15 +505,15 @@ LP$solutionNorm
 There are five example applications in package \ls:
 
 \begin{itemize}
- \item \code{Blending}. In this -underdetermined- problem, an optimal composition of a feeding mix
+ \item \code{Blending}. In this underdetermined problem, an optimal composition of a feeding mix
  is sought such that production costs are minimised subject to minimal nutrient constraints.
  The problem consists of one equality and 4 inequality conditions, and a cost function. It is
  solved by linear programming (\code{linp}). Feasible ranges are estimated (\code{xranges}) and
  feasible solutions generated (\code{xsample})
  \item \code{Chemtax}. This is an overdetermined linear inverse problem, where the algal
  composition of a (field) sample is estimated based on (experimentally-determined) pigment biomarkers.
- Biologists may know this problem as "Chemtax" \citep{Mackey96}. See also \R-package \pkg{BCE} \citep {Meersche08},
-  \citep {Meersche08b}.  The problem contains 8 unknowns; it consists of 1 equality, 12 approximate equations,
+ Biologists may know this problem as "Chemtax" \citep{Mackey96}. See also \R-package \pkg{BCE} \citep {BCE},
+  \citep {Meersche08}.  The problem contains 8 unknowns; it consists of 1 equality, 12 approximate equations,
   and 8 inequalities. It is solved using \code{lsei} and \code{xsample}.
  \item \code{Minkdiet}. This is another -underdetermined- compositional estimation problem, where the
  diet composition of Southeast Alaskan Mink is estimated, based on the C and N isotopic
@@ -499,7 +521,7 @@ ratios of Mink and of its prey items \citep{Ben97}.
  The problem consists of 7 unknowns, 3 equations, and 7 inequalities
  \item \code{RigaWeb}. This is a food web problem, where food web flows of the
  Gulf of Riga planktonic food web in Spring are quantified \citep{Donali99}.
- This -underdetermined- model comprises 26 unknowns, 14 equalities, and 45 inequalities.
+ This underdetermined model comprises 26 unknowns, 14 equalities, and 45 inequalities.
  It is solved by \code{lsei}, \code{xranges}, and \code{xsample}.
  \item \code{E_coli}. This is a flux balance problem, estimating the core metabolic fluxes of Escherichia coli \citep{Edwards02}.
  It is the largest example included in \ls. There are 70 unknowns, 54 equalities and 62 inequalities, and one function to maximise.
@@ -511,7 +533,7 @@ Package \ls provides FORTRAN implementations of:
 \begin{itemize}
 \item the least distance algorithms from \citep{Lawson74} (\code{ldp}, \code{ldei}, \code{nnls}).
 \item the least squares with equality and inequality algorithms from \citep{Haskell78} (\code{lsei}).
-\item a solver for banded linear systems from LINPACK (\citep{LINPACK}).
+\item a solver for banded linear systems from LINPACK \citep{LINPACK}.
 \item a solver for tridiagonal linear systems (own implementation).
 \end{itemize}
 
@@ -525,10 +547,13 @@ This way, similar input can be used to solve least distance, least squares and
 linear programming problems. Note that the packages \pkg{lpSolve} and \pkg{quadprog}
 provide more options than used here.
 
-For solving linear programming, \code{lp} from \pkg{lpSolve} is the only algorithm included.
-(It is the most robust linear programming algorithm we are familiar with). For quadratic
-programming, we added the code \code{lsei}, which in our experience often gives a valid
+
+For solving linear programming problems, \code{lp} from \pkg{lpSolve} is the only algorithm included.
+It is also the most robust linear programming algorithm we are familiar with.
+
+For quadratic programming, we added the code \code{lsei}, which in our experience often gives a valid
 solution whereas other functions (including \code{solve.QP}) may fail.
+
 
 Finalisation of this package was done using R-Forge (\url{http://r-forge.r-project.org/}), the
 framework for \proglang{R} project developers, based on GForge and
@@ -538,17 +563,17 @@ This vignette was created using Sweave \citep{Leisch02}.
 
 The package is on CRAN, the R-archive website (\citep{R2008})
 
-More examples can be found in the demo of package \ls ("demo(limSolve"))
+More examples can be found in the demo of package \ls ("demo(limSolve)")
 
-Another \R-package, \pkg{LIM} (\citep{Soetaert08c})
-\footnote{at this time, this package may not yet be on CRAN; it may be found on R-forge}
+Another \R-package, \pkg{LIM} \citep{LIM}
+\footnote{at this time, this package may not yet be on CRAN; in this case it may be found on R-forge}
 is designed for reading and solving linear inverse models (LIM). The model
 problem is formulated in text files in a way that is natural and
 comprehensible. \pkg{LIM} then converts this input into the required
 linear equality and inequality conditions, which can be solved
 by the functions in package \ls.
 
-The various functions in \ls are given in table (1).
+A list of all functions in \ls is in table (1).
 \begin{table*}[t]
 \caption{Summary of the functions in package \ls}\label{tb:ls}
 \centering

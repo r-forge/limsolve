@@ -68,7 +68,7 @@ pairs(xs,pch=".",cex=2,gap=0,upper.panel=NULL)
 # (i.e. no need to use X as starting value)
 xs<-xsample(E=E,F=F,G=G,H=H,
             iter=2000,output=1000,type="mirror")$X
-pairs(xs,pch=".",cex=2,gap=0,upper.panel=NULL)
+pairs(xs,pch=".",cex=2,gap=0,upper.panel=NULL,yaxt="n",xaxt="n")
 
 # Print results:
 data.frame(pars=pars,xr[,1:2],Mean=colMeans(xs),sd=sd(xs))
