@@ -44,133 +44,133 @@
 ################################################################################
 
 ldei <- function(E,      # numeric matrix containing the coefficients of the equality constraints Ex=F
-                F,       # numeric vector containing the right-hand side of the equality constraints
-                G=NULL,  # numeric matrix containing the coefficients of the inequality constraints G*X>=H
-                H=NULL,  # numeric vector containing the right-hand side of the inequality constraints
-                tol=sqrt(.Machine$double.eps),  # Tolerance (for singular value decomposition, equality and inequality constraints)
-                verbose=TRUE)                   # Logical to print ldei error message
+                 F,       # numeric vector containing the right-hand side of the equality constraints
+                 G=NULL,  # numeric matrix containing the coefficients of the inequality constraints G*X>=H
+                 H=NULL,  # numeric vector containing the right-hand side of the inequality constraints
+                 tol=sqrt(.Machine$double.eps),  # Tolerance (for singular value decomposition, equality and inequality constraints)
+                 verbose=TRUE)                   # Logical to print ldei error message
 
 {
-# input consistency
-if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+  ## input consistency
+  if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
+  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
 
-#------------------------------------------------------------------------
-# 0. Setup problem
-#------------------------------------------------------------------------
-if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
+  ##------------------------------------------------------------------------
+  ## 0. Setup problem
+  ##------------------------------------------------------------------------
+  if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
 
-# Problem dimension
-Neq    <- nrow(E)   # number of equations
-Nx     <- ncol(E)   # number of unknowns
-Nin    <- nrow(G)   # number of inequalities
+  ## Problem dimension
+  Neq    <- nrow(E)   # number of equations
+  Nx     <- ncol(E)   # number of unknowns
+  Nin    <- nrow(G)   # number of inequalities
 
-# copies
-EE <- E
-GG <- G
-
-
-# Consistency of input
-if (!is.null(G)) 
-{
-if (ncol(G)   != Nx)  stop("cannot solve least distance problem - E and G not compatible")
-if (length(H) != Nin) stop("cannot solve least distance problem - G and H not compatible")
-}
-
-if (length(F) != Neq) stop("cannot solve least distance problem - E and F not compatible")
+  ## copies
+  EE <- E
+  GG <- G
 
 
-#------------------------------------------------------------------------
-# 1. Decompose matrix by singular value decomposition
-#------------------------------------------------------------------------
-S          <- svd(E,nrow(E),ncol(E))
+  ## Consistency of input
+  if (!is.null(G)) 
+    {
+      if (ncol(G)   != Nx)  stop("cannot solve least distance problem - E and G not compatible")
+      if (length(H) != Nin) stop("cannot solve least distance problem - G and H not compatible")
+    }
 
-# number of 'solvable unknowns' - the rank of the problem: 
-solvable   <- sum(S$d > tol * S$d[1])     # inequality gives TRUE (1) or FALSE (0)
-if (solvable > Nx) stop("cannot solve problem by LDEI - overdetermined system")
+  if (length(F) != Neq) stop("cannot solve least distance problem - E and F not compatible")
 
-# number of 'unsolvable' unknowns
-unsolvable <- Nx-solvable
 
-#------------------------------------------------------------------------
-# 2. Backsubstitution
-#------------------------------------------------------------------------
-Xb         <- S$v[,1:solvable] %*% (t(S$u[,1:solvable])/S$d[1:solvable])%*%F
+  ##------------------------------------------------------------------------
+  ## 1. Decompose matrix by singular value decomposition
+  ##------------------------------------------------------------------------
+  S          <- svd(E,nrow(E),ncol(E))
 
-# Check if solution is correct
-CC         <- E %*%Xb - F
-if (any(abs(CC)>tol)) stop("cannot solve problem by LDEI - equations incompatible")
+  ## number of 'solvable unknowns' - the rank of the problem: 
+  solvable   <- sum(S$d > tol * S$d[1])     # inequality gives TRUE (1) or FALSE (0)
+  if (solvable > Nx) stop("cannot solve problem by LDEI - overdetermined system")
 
-#------------------------------------------------------------------------
-# 3. Constrained solution
-#------------------------------------------------------------------------
-# Check if inequalities are already satisfied
+  ## number of 'unsolvable' unknowns
+  unsolvable <- Nx-solvable
 
-ifelse (!is.null(G), CC        <- G%*%Xb-H, CC<-0)
+  ##------------------------------------------------------------------------
+  ## 2. Backsubstitution
+  ##------------------------------------------------------------------------
+  Xb         <- S$v[,1:solvable] %*% (t(S$u[,1:solvable])/S$d[1:solvable])%*%F
 
-if (all(CC > -tol))     # done
- {
- X    <- Xb
- IsError <-FALSE
- } else   {
+  ## Check if solution is correct
+  CC         <- E %*%Xb - F
+  if (any(abs(CC)>tol)) stop("cannot solve problem by LDEI - equations incompatible")
 
- # Number of unknowns to be solved by the least distance programming 
- LDPNx   <-unsolvable
+  ##------------------------------------------------------------------------
+  ## 3. Constrained solution
+  ##------------------------------------------------------------------------
+  ## Check if inequalities are already satisfied
 
- # Construct an orthogonal basis of V2 = (I-V*VT)*Random
- rnd     <- matrix(runif(Nx*unsolvable),nrow=Nx,ncol=unsolvable)
- V2      <- diag(1,Nx) - S$v[,1:solvable]%*%t(S$v[,1:solvable])
- V2      <- V2 %*% rnd
+  ifelse (!is.null(G), CC        <- G%*%Xb-H, CC<-0)
 
- # Orthogonal basis, constructed by Singular Value Decomposition on V2. 
- Vort    <- svd(V2,nu=0,nv=unsolvable)  # only right-hand side needed
- ortho   <- V2 %*% Vort$v[,1:unsolvable]
- for (i in 1:Nx) ortho[i,]<- ortho[i,]/Vort$d[1:unsolvable]
+  if (all(CC > -tol))     # done
+    {
+      X    <- Xb
+      IsError <-FALSE
+    } else   {
 
- # Least distance programming matrices LDPG = G*ortho, LDPH = H - G*Xb 
- LDPG    <- G %*% ortho
- LDPH    <- H - G %*% Xb
+      ## Number of unknowns to be solved by the least distance programming 
+      LDPNx   <-unsolvable
 
- # call the DLL with the least distance programming routine ldp
- IsError <- FALSE
- NW      <- (LDPNx+1)*(Nin+2) +2*Nin
- sol  <-.Fortran("ldp",G=LDPG,H=LDPH,
-                       NUnknowns=as.integer(LDPNx),NConstraints=as.integer(Nin),
-                       NW=as.integer(NW),X=as.vector(rep(0,LDPNx)),XNorm=0.,
-                       W=as.double(rep(0.,NW)),xIndex=as.integer(rep(0,Nin)),
-                       Mode=as.integer(0),
-                       verbose=as.logical(verbose),IsError=as.logical(IsError))
+      ## Construct an orthogonal basis of V2 = (I-V*VT)*Random
+      rnd     <- matrix(runif(Nx*unsolvable),nrow=Nx,ncol=unsolvable)
+      V2      <- diag(1,Nx) - S$v[,1:solvable]%*%t(S$v[,1:solvable])
+      V2      <- V2 %*% rnd
 
- IsError<-sol$IsError 
+      ## Orthogonal basis, constructed by Singular Value Decomposition on V2. 
+      Vort    <- svd(V2,nu=0,nv=unsolvable)  ## only right-hand side needed
+      ortho   <- V2 %*% Vort$v[,1:unsolvable]
+      for (i in 1:Nx) ortho[i,]<- ortho[i,]/Vort$d[1:unsolvable]
 
- # The solution, corrected for weights
- X    <- ortho[,1:unsolvable] %*% as.matrix(sol$X) + Xb
- X[which(abs(X)<tol)] <- 0         # zero very tiny values
- 
-         } # end CC > - tol
+      ## Least distance programming matrices LDPG = G*ortho, LDPH = H - G*Xb 
+      LDPG    <- G %*% ortho
+      LDPH    <- H - G %*% Xb
 
- # Residual of the inequalities
- residin  <- 0
- if (!is.null(GG)) {
- ineq     <- GG %*% X - H
- residin  <- -sum(ineq[ineq<0])
-                   }
- # Total residual norm
- residual <- sum(abs(EE %*% X - F))+residin
+      ## call the DLL with the least distance programming routine ldp
+      IsError <- FALSE
+      NW      <- (LDPNx+1)*(Nin+2) +2*Nin
+      sol  <-.Fortran("ldp",G=LDPG,H=LDPH,
+                      NUnknowns=as.integer(LDPNx),NConstraints=as.integer(Nin),
+                      NW=as.integer(NW),X=as.vector(rep(0,LDPNx)),XNorm=0.,
+                      W=as.double(rep(0.,NW)),xIndex=as.integer(rep(0,Nin)),
+                      Mode=as.integer(0),
+                      verbose=as.logical(verbose),IsError=as.logical(IsError))
 
- # The solution norm
- solution <- sum ((X)^2)
-X    <- as.vector(X)
-xnames <- colnames(E)
-if (is.null(xnames)) xnames <- colnames(G)
-names (X) <- xnames
+      IsError<-sol$IsError 
 
-return(list(X=X,                            # vector containing the solution of the least distance problem.
-            unconstrained.solution=as.vector(Xb),  # vector containing the unconstrained solution of the least distance problem
-            residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
-            solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
-            IsError=IsError,                # if an error occurred
-            type="ldei"))
+      ## The solution, corrected for weights
+      X    <- ortho[,1:unsolvable] %*% as.matrix(sol$X) + Xb
+      X[which(abs(X)<tol)] <- 0         ## zero very tiny values
+      
+    } ## end CC > - tol
+
+  ## Residual of the inequalities
+  residin  <- 0
+  if (!is.null(GG)) {
+    ineq     <- GG %*% X - H
+    residin  <- -sum(ineq[ineq<0])
+  }
+  ## Total residual norm
+  residual <- sum(abs(EE %*% X - F))+residin
+
+  ## The solution norm
+  solution <- sum ((X)^2)
+  X    <- as.vector(X)
+  xnames <- colnames(E)
+  if (is.null(xnames)) xnames <- colnames(G)
+  names (X) <- xnames
+
+  return(list(X=X,                            # vector containing the solution of the least distance problem.
+              unconstrained.solution=as.vector(Xb),  # vector containing the unconstrained solution of the least distance problem
+              residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
+              solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
+              IsError=IsError,                # if an error occurred
+              type="ldei"))
 
 } ########## END OF ldei ########## 
 
@@ -179,57 +179,57 @@ return(list(X=X,                            # vector containing the solution of 
 ################################################################################
 
 nnls <- function(A,  # numeric matrix containing the coefficients of the equality constraints A*X~=B
-                B,  # numeric vector containing the right-hand side of the equality constraints
-                tol=sqrt(.Machine$double.eps),   # Tolerance (for singular value decomposition, equality and inequality constraints)
-                verbose=TRUE)                   # Logical to print ldp error message
+                 B,  # numeric vector containing the right-hand side of the equality constraints
+                 tol=sqrt(.Machine$double.eps),   # Tolerance (for singular value decomposition, equality and inequality constraints)
+                 verbose=TRUE)                   # Logical to print ldp error message
 
 {
 
-#------------------------------------------------------------------------
-# 0. Setup problem
-#------------------------------------------------------------------------
-# input consistency
-if (! is.matrix(A) & ! is.null(A)) A <- t(as.matrix(A))
+  ##------------------------------------------------------------------------
+  ## 0. Setup problem
+  ##------------------------------------------------------------------------
+  ## input consistency
+  if (! is.matrix(A) & ! is.null(A)) A <- t(as.matrix(A))
 
-if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
+  if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
 
-# Problem dimension
-Nx     <- ncol(A)   # number of unknowns
-Neq    <- nrow(A)   # number of inequalities
-if (length(B) != Neq) stop("cannot solve nnls problem - A and B not compatible")
+  ## Problem dimension
+  Nx     <- ncol(A)   # number of unknowns
+  Neq    <- nrow(A)   # number of inequalities
+  if (length(B) != Neq) stop("cannot solve nnls problem - A and B not compatible")
 
- sol  <-.Fortran("xnnls",A=A,MDA=as.integer(Neq),M=as.integer(Neq),
-                       N=as.integer(Nx),B=B,X=as.vector(rep(0,Nx)),RNorm=0.,
-                       W=as.double(rep(0.,Nx)),ZZ=as.double(rep(0.,Neq)),
-                       Index=as.integer(rep(0,Nx)), Mode=as.integer(0))
- IsError <- FALSE
- Mode <- sol$Mode
+  sol  <-.Fortran("xnnls",A=A,MDA=as.integer(Neq),M=as.integer(Neq),
+                  N=as.integer(Nx),B=B,X=as.vector(rep(0,Nx)),RNorm=0.,
+                  W=as.double(rep(0.,Nx)),ZZ=as.double(rep(0.,Neq)),
+                  Index=as.integer(rep(0,Nx)), Mode=as.integer(0))
+  IsError <- FALSE
+  Mode <- sol$Mode
 
- if (Mode != 1) 
-  {IsError <- TRUE
-   if (verbose) {
-   if (Mode ==2) warning("nnls: The dimensions of the problem are bad")
-   if (Mode ==3) warning("nnls: iteration count exceeded: more than 3*N iterations")
+  if (Mode != 1) 
+    {IsError <- TRUE
+     if (verbose) {
+       if (Mode ==2) warning("nnls: The dimensions of the problem are bad")
+       if (Mode ==3) warning("nnls: iteration count exceeded: more than 3*N iterations")
+     }
    }
-  }
- 
- # The solution
- X    <- sol$X
+  
+  ## The solution
+  X    <- sol$X
 
- # Residual of the inequalities
- residual  <- -sum(X[X<0])
+  ## Residual of the inequalities
+  residual  <- -sum(X[X<0])
 
- # The solution norm
- solution <- sum(abs(A %*% X - B))
+  ## The solution norm
+  solution <- sum(abs(A %*% X - B))
 
-xnames <- colnames(A)
-names (X) <- xnames
+  xnames <- colnames(A)
+  names (X) <- xnames
 
-return(list(X=X,                            # vector containing the solution of the least distance problem.
-            residualNorm=residual,          # scalar, the sum of violated inequalities (i.e where x<0)
-            solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
-            IsError=IsError,                # if an error occurred
-            type="nnls"))
+  return(list(X=X,                            # vector containing the solution of the least distance problem.
+              residualNorm=residual,          # scalar, the sum of violated inequalities (i.e where x<0)
+              solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
+              IsError=IsError,                # if an error occurred
+              type="nnls"))
 
 } ########## END OF nnls ########## 
 
@@ -244,49 +244,49 @@ ldp <- function(G,  # numeric matrix containing the coefficients of the inequali
 
 {
 
-#------------------------------------------------------------------------
-# 0. Setup problem
-#------------------------------------------------------------------------
-# input consistency
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+  ##------------------------------------------------------------------------
+  ## 0. Setup problem
+  ##------------------------------------------------------------------------
+  ## input consistency
+  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
 
-if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
+  if (is.null(tol)) tol <- sqrt(.Machine$double.eps)
 
-# Problem dimension
-Nx     <- ncol(G)   # number of unknowns
-Nin    <- nrow(G)   # number of inequalities
-if (length(H) != Nin) stop("cannot solve least distance problem - G and H not compatible")
+  ## Problem dimension
+  Nx     <- ncol(G)   # number of unknowns
+  Nin    <- nrow(G)   # number of inequalities
+  if (length(H) != Nin) stop("cannot solve least distance problem - G and H not compatible")
 
- IsError <- FALSE
- NW      <- (Nx+1)*(Nin+2) +2*Nin
- sol  <-.Fortran("ldp",G=G,H=H,
-                       NUnknowns=as.integer(Nx),NConstraints=as.integer(Nin),
-                       NW=as.integer(NW),X=as.vector(rep(0,Nx)),XNorm=0.,
-                       W=as.double(rep(0.,NW)),xIndex=as.integer(rep(0,Nin)),
-                       Mode=as.integer(0),
-                       verbose=as.logical(verbose),IsError=as.logical(IsError))
- IsError<-sol$IsError 
- 
- # The solution
- X    <- sol$X
+  IsError <- FALSE
+  NW      <- (Nx+1)*(Nin+2) +2*Nin
+  sol  <-.Fortran("ldp",G=G,H=H,
+                  NUnknowns=as.integer(Nx),NConstraints=as.integer(Nin),
+                  NW=as.integer(NW),X=as.vector(rep(0,Nx)),XNorm=0.,
+                  W=as.double(rep(0.,NW)),xIndex=as.integer(rep(0,Nin)),
+                  Mode=as.integer(0),
+                  verbose=as.logical(verbose),IsError=as.logical(IsError))
+  IsError<-sol$IsError 
+  
+  ## The solution
+  X    <- sol$X
 
- # Residual of the inequalities
- residual  <- 0
- if (!is.null(G)) {
- ineq     <- G %*% X - H
- residual  <- -sum(ineq[ineq<0])
-                   }
- # The solution norm
- solution <- sum ((X)^2)
+  ## Residual of the inequalities
+  residual  <- 0
+  if (!is.null(G)) {
+    ineq     <- G %*% X - H
+    residual  <- -sum(ineq[ineq<0])
+  }
+  ## The solution norm
+  solution <- sum ((X)^2)
 
-xnames <- colnames(G)
-names (X) <- xnames
+  xnames <- colnames(G)
+  names (X) <- xnames
 
-return(list(X=X,                            # vector containing the solution of the least distance problem.
-            residualNorm=residual,          # scalar, the sum of residuals of violated inequalities
-            solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
-            IsError=IsError,                # if an error occurred
-            type="ldp"))
+  return(list(X=X,                            # vector containing the solution of the least distance problem.
+              residualNorm=residual,          # scalar, the sum of residuals of violated inequalities
+              solutionNorm=solution,          # scalar, the value of the quadratic function at the solution
+              IsError=IsError,                # if an error occurred
+              type="ldp"))
 
 } ########## END OF ldp ########## 
 
@@ -303,99 +303,99 @@ linp <- function(E=NULL, # numeric matrix containing the coefficients of the equ
                  int.vec=NULL,  # Numeric vector giving the indices of variables that are required to be integer. The length of this vector will therefore be the number of integer variables.
                  verbose=TRUE,  # Logical to print error message
                  ...)           # extra arguments passed to R-function lp
- 
-#------------------------------------------------------------------------
-# Solves a linear programming problem, 
-# Minimise               Cost 
-# subject to             E*x=f 
-#                        G*x>=h
-#
-# Note: uses lp from package lpSolve 
-# This R-code sometimes fails and terminates R
-#      for very small problems that are repeated frequently...
-#------------------------------------------------------------------------
+  
+  ##------------------------------------------------------------------------
+  ## Solves a linear programming problem, 
+  ## Minimise               Cost 
+  ## subject to             E*x=f 
+  ##                        G*x>=h
+  ##
+  ## Note: uses lp from package lpSolve 
+  ## This R-code sometimes fails and terminates R
+  ##      for very small problems that are repeated frequently...
+  ##------------------------------------------------------------------------
 
 {
-# input consistency
-if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+  ## input consistency
+  if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
+  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
 
 
-# problem dimension
-Neq  <- nrow(E)   # Number equalities
-Nx   <- ncol(E)   # Number unknowns
-Nin  <- nrow(G)   # Number inequalities
+  ## problem dimension
+  Neq  <- nrow(E)   # Number equalities
+  Nx   <- ncol(E)   # Number unknowns
+  Nin  <- nrow(G)   # Number inequalities
 
-if (is.null(Nx )) Nx  <- ncol(G)
-if (is.null(Nin)) Nin <- 0
-if (is.null(Neq)) Neq <- 0
+  if (is.null(Nx )) Nx  <- ncol(G)
+  if (is.null(Nin)) Nin <- 0
+  if (is.null(Neq)) Neq <- 0
 
-NumEq <- Nin+Neq  # total number of equations
+  NumEq <- Nin+Neq  # total number of equations
 
-# consistency of input
-if (!is.null(G)) 
-{
-if (ncol(G)   != Nx)   stop("cannot solve linear programming problem - E and G not compatible")
-if (length(H) != Nin)  stop("cannot solve linear programming problem - G and H not compatible")
-}
+  ## consistency of input
+  if (!is.null(G)) 
+    {
+      if (ncol(G)   != Nx)   stop("cannot solve linear programming problem - E and G not compatible")
+      if (length(H) != Nin)  stop("cannot solve linear programming problem - G and H not compatible")
+    }
 
-if (!is.null(E)) 
-{
-if (length(F) != Neq)  stop("cannot solve linear programming problem - E and F not compatible")
-}
+  if (!is.null(E)) 
+    {
+      if (length(F) != Neq)  stop("cannot solve linear programming problem - E and F not compatible")
+    }
 
-if (length(Cost)!= Nx) stop("cannot solve linear programming problem - Cost not compatible")
-IsError <- FALSE
+  if (length(Cost)!= Nx) stop("cannot solve linear programming problem - Cost not compatible")
+  IsError <- FALSE
 
-# con: constraints ; rhs: right hand side
+  ## con: constraints ; rhs: right hand side
 
-# the equalities:
-con   <- E
-rhs   <- F
-dir   <- rep("==",Neq)
+  ## the equalities:
+  con   <- E
+  rhs   <- F
+  dir   <- rep("==",Neq)
 
-# inequalities:
-if (Nin > 0)
-{
-con   <- rbind(con,G)
-rhs   <- c(rhs,H)
-dir   <- c(dir,rep(">=",Nin))
-}
+  ## inequalities:
+  if (Nin > 0)
+    {
+      con   <- rbind(con,G)
+      rhs   <- c(rhs,H)
+      dir   <- c(dir,rep(">=",Nin))
+    }
 
-if (!ispos)
-{
-con  <- cbind(con, -con)
-Cost <- c(Cost, -Cost)
-if (! is.null(int.vec)) int.vec<-c(int.vec,int.vec+Nx)
-}
+  if (!ispos)
+    {
+      con  <- cbind(con, -con)
+      Cost <- c(Cost, -Cost)
+      if (! is.null(int.vec)) int.vec<-c(int.vec,int.vec+Nx)
+    }
 
-# the solution
-sol    <- lp("min",Cost,con,dir,rhs,int.vec=int.vec,...)
-mode   <- sol$status
-if (mode == 2) {print("no feasible solution");IsError<-TRUE}
-if (mode == 3) {print("error");IsError<-TRUE}
-X           <- sol$solution
-if (!ispos) X <- X[1:Nx]-X[(Nx+1):(2*Nx)]
-solutionNorm<- sol$objval
+  ## the solution
+  sol    <- lp("min",Cost,con,dir,rhs,int.vec=int.vec,...)
+  mode   <- sol$status
+  if (mode == 2) {print("no feasible solution");IsError<-TRUE}
+  if (mode == 3) {print("error");IsError<-TRUE}
+  X           <- sol$solution
+  if (!ispos) X <- X[1:Nx]-X[(Nx+1):(2*Nx)]
+  solutionNorm<- sol$objval
 
-# Total residual norm
-residual <- 0
-if (!is.null(E))  residual <- sum(abs(E %*% X - F))+residual 
-if (!is.null(G))  
-{
- ineq     <- G %*% X - H
- residual <- residual -sum(ineq[ineq<0])
-}
-xnames <- colnames(E)
-if (is.null(xnames)) xnames <- colnames(G)
-if (is.null(xnames)) xnames <- names(Cost)
-names (X) <- xnames
+  ## Total residual norm
+  residual <- 0
+  if (!is.null(E))  residual <- sum(abs(E %*% X - F))+residual 
+  if (!is.null(G))  
+    {
+      ineq     <- G %*% X - H
+      residual <- residual -sum(ineq[ineq<0])
+    }
+  xnames <- colnames(E)
+  if (is.null(xnames)) xnames <- colnames(G)
+  if (is.null(xnames)) xnames <- names(Cost)
+  names (X) <- xnames
 
-return(list(X=X,                        # vector containing the solution of the linear programming problem.
-            residualNorm=residual,      # scalar, the sum of residuals of equalities and violated inequalities
-            solutionNorm=solutionNorm,  # scalar, the value of the minimised cost function
-            IsError=IsError,            # if an error occurred
-            type="linp"))
+  return(list(X=X,                        # vector containing the solution of the linear programming problem.
+              residualNorm=residual,      # scalar, the sum of residuals of equalities and violated inequalities
+              solutionNorm=solutionNorm,  # scalar, the value of the minimised cost function
+              IsError=IsError,            # if an error occurred
+              type="linp"))
 
 } ########## END OF linp ##########                 
 
@@ -418,195 +418,195 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
                  fulloutput = FALSE, 
                  verbose=TRUE)                    # Logical to print error messages
 
-#------------------------------------------------------------------------
-# Solves an lsei inverse problem, 
-# lsei = Least Squares with Equality and Inequality constraints 
-# Minimise             ||A*X-B|| 
-# subject to             E*X=F 
-#                        G*X>=H
-# uses either the LINPACK package lsei or solve.QP from package quadprog
-#------------------------------------------------------------------------
+  ##------------------------------------------------------------------------
+  ## Solves an lsei inverse problem, 
+  ## lsei = Least Squares with Equality and Inequality constraints 
+  ## Minimise             ||A*X-B|| 
+  ## subject to             E*X=F 
+  ##                        G*X>=H
+  ## uses either the LINPACK package lsei or solve.QP from package quadprog
+  ##------------------------------------------------------------------------
 
 {
 
-#------------------------------------------------------------------------
-# Setup problem
-#------------------------------------------------------------------------
-# input consistency
-if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-if (! is.matrix(A) & ! is.null(A)) A <- t(as.matrix(A))
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
-if (! is.matrix(F) & ! is.null(F)) F <- as.matrix(F)
-if (! is.matrix(B) & ! is.null(B)) B <- as.matrix(B)
-if (! is.matrix(H) & ! is.null(H)) H <- as.matrix(H)
-if (is.null(A) && is.null (E)) {
-  if(is.null(G))   stop("cannot solve least squares problem - A, E AND G are NULL")
-  A <- matrix(nrow=1,ncol=ncol(G),0)
-  B <- 0                       }  else if (is.null(A)) {
-A <- matrix(nrow=1,data=E[1,]);B<-F[1]}
+  ##------------------------------------------------------------------------
+  ## Setup problem
+  ##------------------------------------------------------------------------
+  ## input consistency
+  if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
+  if (! is.matrix(A) & ! is.null(A)) A <- t(as.matrix(A))
+  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+  if (! is.matrix(F) & ! is.null(F)) F <- as.matrix(F)
+  if (! is.matrix(B) & ! is.null(B)) B <- as.matrix(B)
+  if (! is.matrix(H) & ! is.null(H)) H <- as.matrix(H)
+  if (is.null(A) && is.null (E)) {
+    if(is.null(G))   stop("cannot solve least squares problem - A, E AND G are NULL")
+    A <- matrix(nrow=1,ncol=ncol(G),0)
+    B <- 0                       }  else if (is.null(A)) {
+      A <- matrix(nrow=1,data=E[1,]);B<-F[1]}
 
-# Problem dimension
-Neq  <- nrow(E)
-Napp <- nrow(A)
-Nx   <- ncol(A)
-Nin  <- nrow(G)
-if (is.null (Nx))   Nx  <- ncol(E)
-if (is.null (Nx))   Nx  <- ncol(G)
-if (is.null (Neq))  Neq  <- 1
-if (is.null (Nin))  Nin  <- 1
-# If equalities/inequalities absent: "empty" constraints...
-if (is.null(E)) E <- matrix(nrow=1,ncol=Nx,0)
-if (is.null(F)) F <- 0
-if (is.null(G)) G <- matrix(nrow=1,ncol=Nx,0)
-if (is.null(H)) H <- 0
+  ## Problem dimension
+  Neq  <- nrow(E)
+  Napp <- nrow(A)
+  Nx   <- ncol(A)
+  Nin  <- nrow(G)
+  if (is.null (Nx))   Nx  <- ncol(E)
+  if (is.null (Nx))   Nx  <- ncol(G)
+  if (is.null (Neq))  Neq  <- 1
+  if (is.null (Nin))  Nin  <- 1
+  ## If equalities/inequalities absent: "empty" constraints...
+  if (is.null(E)) E <- matrix(nrow=1,ncol=Nx,0)
+  if (is.null(F)) F <- 0
+  if (is.null(G)) G <- matrix(nrow=1,ncol=Nx,0)
+  if (is.null(H)) H <- 0
 
-if (ncol(G)   != Nx)   stop("cannot solve least squares problem - A and G not compatible")
-if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
-if (length(B) != Napp) stop("cannot solve least squares problem - A and B not compatible")
-if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
-if (length(H) != Nin)  stop("cannot solve least squares problem - G and H not compatible")
+  if (ncol(G)   != Nx)   stop("cannot solve least squares problem - A and G not compatible")
+  if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
+  if (length(B) != Napp) stop("cannot solve least squares problem - A and B not compatible")
+  if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
+  if (length(H) != Nin)  stop("cannot solve least squares problem - G and H not compatible")
 
-if (! is.null(Wa))
-{
-  if (length(Wa) != Napp) stop ("cannot solve least squares problem - Wa should have length = number of rows of A") 
+  if (! is.null(Wa))
+    {
+      if (length(Wa) != Napp) stop ("cannot solve least squares problem - Wa should have length = number of rows of A") 
 
-  A <- A*Wa
-  B <- B*Wa
-}
+      A <- A*Wa
+      B <- B*Wa
+    }
 
-Tol <- tol 
-if (is.null(Tol)) Tol <- sqrt(.Machine$double.eps)
+  Tol <- tol 
+  if (is.null(Tol)) Tol <- sqrt(.Machine$double.eps)
 
-#------------------------------------------------------------------------
-# Solution
-#------------------------------------------------------------------------
+  ##------------------------------------------------------------------------
+  ## Solution
+  ##------------------------------------------------------------------------
 
-IsError <- FALSE
+  IsError <- FALSE
 
-if (type == 1)     # use LINPACKs lsei
-{
- ineq <- Nin+Nx
- mIP  <- ineq+2*Nx+2
+  if (type == 1)     # use LINPACKs lsei
+    {
+      ineq <- Nin+Nx
+      mIP  <- ineq+2*Nx+2
 
-# extra options?
- lpr <- 1
- if (fulloutput) lpr <- lpr+3
- if (! is.null(tolrank)) lpr <- lpr + 6
- if (! is.null(Wx))   {lw  <- length (Wx) ; lpr <- lpr + 2 + lw}
-  
- ProgOpt <- rep(1.0,lpr)
- if (lpr>1)
- {
- ipr <- 1
- if (fulloutput) {ProgOpt[ipr:(ipr+2)] <- c(ipr+3,1,1); ipr <- ipr+3}
- if (! is.null(tolrank))
- {
-   if (length(tolrank) == 1) tolrank <- rep(tolrank,len=2)
-   ProgOpt[ipr:(ipr+5)] <- c(ipr+6,4,tolrank[1],ipr+6,5,tolrank[2]) 
-   ipr <- ipr+6
- }
- if (! is.null(Wx)) 
- {
-  lw  <- length (Wx) 
-  if (lw ==1) {ProgOpt[ipr:(ipr+2)]<- c(ipr+3,2,1)} else
-  {if (lw != Nx) stop("cannot solve least squares problem - number of weighs should be =1 or =number of unknowns") 
-   lw <- lw + ipr+1
-   ProgOpt[ipr:lw] <- c(lw+1,3,Wx)
- }
- }
- } 
- mdW <- Neq + Napp + ineq
- if (fulloutput) mdW <- max(mdW, Nx)
- mWS <- 2*(Neq+Nx)+max(Napp+ineq,Nx)+(ineq+2)*(Nx+7)
+      ## extra options?
+      lpr <- 1
+      if (fulloutput) lpr <- lpr+3
+      if (! is.null(tolrank)) lpr <- lpr + 6
+      if (! is.null(Wx))   {lw  <- length (Wx) ; lpr <- lpr + 2 + lw}
+      
+      ProgOpt <- rep(1.0,lpr)
+      if (lpr>1)
+        {
+          ipr <- 1
+          if (fulloutput) {ProgOpt[ipr:(ipr+2)] <- c(ipr+3,1,1); ipr <- ipr+3}
+          if (! is.null(tolrank))
+            {
+              if (length(tolrank) == 1) tolrank <- rep(tolrank,len=2)
+              ProgOpt[ipr:(ipr+5)] <- c(ipr+6,4,tolrank[1],ipr+6,5,tolrank[2]) 
+              ipr <- ipr+6
+            }
+          if (! is.null(Wx)) 
+            {
+              lw  <- length (Wx) 
+              if (lw ==1) {ProgOpt[ipr:(ipr+2)]<- c(ipr+3,2,1)} else
+              {if (lw != Nx) stop("cannot solve least squares problem - number of weighs should be =1 or =number of unknowns") 
+               lw <- lw + ipr+1
+               ProgOpt[ipr:lw] <- c(lw+1,3,Wx)
+             }
+            }
+        } 
+      mdW <- Neq + Napp + ineq
+      if (fulloutput) mdW <- max(mdW, Nx)
+      mWS <- 2*(Neq+Nx)+max(Napp+ineq,Nx)+(ineq+2)*(Nx+7)
 
-  sol <-.Fortran("lsei",NUnknowns=Nx,NEquations=Neq,NConstraints=Nin,NApproximate=Napp, 
-                 A=A,B=B,E=E,F=F,G=G,H=H,X=as.vector(rep(0,Nx)),
-                 mIP=as.integer(mIP),mdW=as.integer(mdW),mWS=as.integer(mWS),
-                 IP=as.integer(rep(0,mIP)),
-                 W=as.double(matrix(nrow=mdW,ncol=Nx+1,0.)),WS=as.double(rep(0.,mWS)),
-                 lpr=as.integer(lpr),ProgOpt=as.double(ProgOpt),
-                 verbose=as.logical(verbose),IsError=as.logical(IsError))
+      sol <-.Fortran("lsei",NUnknowns=Nx,NEquations=Neq,NConstraints=Nin,NApproximate=Napp, 
+                     A=A,B=B,E=E,F=F,G=G,H=H,X=as.vector(rep(0,Nx)),
+                     mIP=as.integer(mIP),mdW=as.integer(mdW),mWS=as.integer(mWS),
+                     IP=as.integer(rep(0,mIP)),
+                     W=as.double(matrix(nrow=mdW,ncol=Nx+1,0.)),WS=as.double(rep(0.,mWS)),
+                     lpr=as.integer(lpr),ProgOpt=as.double(ProgOpt),
+                     verbose=as.logical(verbose),IsError=as.logical(IsError))
 
-  if (fulloutput) 
-  {covar<-matrix(nrow=mdW,ncol=Nx+1,data=sol$W)[1:Nx,1:Nx]
-  RankEq <- sol$IP[1]
-  RankApp <- sol$IP[2]
-  }
-} else if (type == 2) 
-
-
-{                 # use R's solve.QP, package quadprog
-  if (! is.null(Wx)) stop ("cannot solve least squares problem - weights not implemented for type 2") 
-  if (! is.null(Wa)) stop ("cannot solve least squares problem - weights not implemented for type 2") 
-
-  dvec  <- t(A) %*% B
-  Dmat  <- t(A) %*% A
-  diag(Dmat) <- diag(Dmat)+1e-8
-  Amat  <- t(rbind(E,G))
-  bvec  <- c(F,H)
-
-  sol   <- solve.QP(Dmat ,dvec, Amat , bvec, meq=Neq)
-  sol$IsError <- FALSE
-
-  if (sol$value>Tol) 
-  {
-   sol $IsError<- TRUE
-   print("problem incompatible")
-  }
-sol$X <- sol$solution
-
-} else  stop("cannot solve least squares problem - type unknown")
+      if (fulloutput) 
+        {covar<-matrix(nrow=mdW,ncol=Nx+1,data=sol$W)[1:Nx,1:Nx]
+         RankEq <- sol$IP[1]
+         RankApp <- sol$IP[2]
+       }
+    } else if (type == 2) 
 
 
+      {                 ## use R's solve.QP, package quadprog
+        if (! is.null(Wx)) stop ("cannot solve least squares problem - weights not implemented for type 2") 
+        if (! is.null(Wa)) stop ("cannot solve least squares problem - weights not implemented for type 2") 
 
- X <- sol$X
- X[which(abs(X)<Tol)] <- 0         # zero very tiny values
+        dvec  <- t(A) %*% B
+        Dmat  <- t(A) %*% A
+        diag(Dmat) <- diag(Dmat)+1e-8
+        Amat  <- t(rbind(E,G))
+        bvec  <- c(F,H)
 
- # Residual of the inequalities
- residual <- 0
- if (Nin > 0) 
- { 
- ineq     <- G %*% X - H
- residual  <- residual -sum(ineq[ineq<0])
- }
+        sol   <- solve.QP(Dmat ,dvec, Amat , bvec, meq=Neq)
+        sol$IsError <- FALSE
 
- # Total residual norm
- if (Neq> 0) 
- {
- residual <- residual + sum(abs(E %*% X - F))  
- }
+        if (sol$value>Tol) 
+          {
+            sol $IsError<- TRUE
+            print("problem incompatible")
+          }
+        sol$X <- sol$solution
+
+      } else  stop("cannot solve least squares problem - type unknown")
+
+
+
+  X <- sol$X
+  X[which(abs(X)<Tol)] <- 0         # zero very tiny values
+
+  ## Residual of the inequalities
+  residual <- 0
+  if (Nin > 0) 
+    { 
+      ineq     <- G %*% X - H
+      residual  <- residual -sum(ineq[ineq<0])
+    }
+
+  ## Total residual norm
+  if (Neq> 0) 
+    {
+      residual <- residual + sum(abs(E %*% X - F))  
+    }
   if (residual>Tol) 
-  {
-   sol$IsError<- TRUE
-  }
+    {
+      sol$IsError<- TRUE
+    }
 
- # The solution norm
- 
- solution <- 0
- if (Napp > 0)
- {
- solution <- sum ((A %*% X - B)^2)
- }
+  ## The solution norm
+  
+  solution <- 0
+  if (Napp > 0)
+    {
+      solution <- sum ((A %*% X - B)^2)
+    }
 
-xnames <- colnames(A)
-if (is.null(xnames)) xnames <- colnames(E)
-if (is.null(xnames)) xnames <- colnames(G)
-names (X) <- xnames
+  xnames <- colnames(A)
+  if (is.null(xnames)) xnames <- colnames(E)
+  if (is.null(xnames)) xnames <- colnames(G)
+  names (X) <- xnames
 
-res <- list(X=X,                            # vector containing the solution of the least squares problem.
-            residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
-            solutionNorm=solution,          # scalar, the value of the minimised quadratic function at the solution
-            IsError=sol$IsError,            # if an error occurred
-            type="lsei")
+  res <- list(X=X,                            # vector containing the solution of the least squares problem.
+              residualNorm=residual,          # scalar, the sum of residuals of equalities and violated inequalities
+              solutionNorm=solution,          # scalar, the value of the minimised quadratic function at the solution
+              IsError=sol$IsError,            # if an error occurred
+              type="lsei")
 
-if (fulloutput && type == 1)
-  {
-  res$covar<-covar
-  res$RankEq <- sol$IP[1]
-  res$RankApp <- sol$IP[2]
-  }
+  if (fulloutput && type == 1)
+    {
+      res$covar<-covar
+      res$RankEq <- sol$IP[1]
+      res$RankApp <- sol$IP[2]
+    }
 
-return(res)
+  return(res)
 
 } ########## END OF lsei ##########                 
 
@@ -619,141 +619,141 @@ return(res)
 resolution <- function (s,              # either matrix or its singular value decomposition
                         tol=sqrt(.Machine$double.eps))  # tolerance for singular values
 
-#------------------------------------------------------------------------
-# Given the singular value decomposition s, or the input matrix  
-# calculates the resolution of the equations (rows) and of the variables (columns)
-# of the matrix
-#------------------------------------------------------------------------
+  ##------------------------------------------------------------------------
+  ## Given the singular value decomposition s, or the input matrix  
+  ## calculates the resolution of the equations (rows) and of the variables (columns)
+  ## of the matrix
+  ##------------------------------------------------------------------------
 {
 
- if (is.numeric(s)) s <- svd(s)
- solvable <- sum (s$d>tol*s$d[1])       # number of sufficiently large singular values
+  if (is.numeric(s)) s <- svd(s)
+  solvable <- sum (s$d>tol*s$d[1])       # number of sufficiently large singular values
 
-# The resolution of the equations
- resolutioneq <- diag(s$u[,1:solvable]%*%t(s$u[,1:solvable]))
+  ## The resolution of the equations
+  resolutioneq <- diag(s$u[,1:solvable]%*%t(s$u[,1:solvable]))
 
-# The resolution of the variables
- resolutionvar <- diag(s$v[,1:solvable]%*%t(s$v[,1:solvable]))
+  ## The resolution of the variables
+  resolutionvar <- diag(s$v[,1:solvable]%*%t(s$v[,1:solvable]))
 
- return(list(row=resolutioneq,      # resolution of the rows  (equations)
-             col=resolutionvar,     # resolution of the columns (variables)
-             nsolvable=solvable))   # number of solvable unknowns - rank
+  return(list(row=resolutioneq,      # resolution of the rows  (equations)
+              col=resolutionvar,     # resolution of the columns (variables)
+              nsolvable=solvable))   # number of solvable unknowns - rank
 
 }
 
 
 xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL, 
-             ispos=FALSE, tol = 1e-8, central = FALSE, full=FALSE)
-#------------------------------------------------------------------------
-# Given the linear constraints
-#                        E*X=F 
-#                        G*X>=H
-#
-# finds the minimum and maximum values of all elements of vector X 
-# by successively minimising and maximising each x, using linear programming
-# uses lpSolve - may fail (if frequently repeated)                       
-# unknowns can possibly be negative unless ispos=TRUE
-# if all are positive, then it is solved much faster.
-#------------------------------------------------------------------------
+                       ispos=FALSE, tol = 1e-8, central = FALSE, full=FALSE)
+  ##------------------------------------------------------------------------
+  ## Given the linear constraints
+  ##                        E*X=F 
+  ##                        G*X>=H
+  ##
+  ## finds the minimum and maximum values of all elements of vector X 
+  ## by successively minimising and maximising each x, using linear programming
+  ## uses lpSolve - may fail (if frequently repeated)                       
+  ## unknowns can possibly be negative unless ispos=TRUE
+  ## if all are positive, then it is solved much faster.
+  ##------------------------------------------------------------------------
 
 {
-# input consistency
-    if (!is.matrix(E) & !is.null(E))
-        E <- t(as.matrix(E))
-    if (!is.matrix(G) & !is.null(G))
-        G <- t(as.matrix(G))
-# Dimensions of the problem
-    Neq <- nrow(E)
-    Nx  <- ncol(E)
-    if (is.null(Nx)) Nx <- ncol(G)
-    Nineq <- nrow(G)
-    if (is.null(Nineq))
-        Nineq <- 0
-    if (is.null(Neq))
-        Neq <- 0
-    Range <- matrix(ncol = 2, nrow = Nx, NA)
+  ## input consistency
+  if (!is.matrix(E) & !is.null(E))
+    E <- t(as.matrix(E))
+  if (!is.matrix(G) & !is.null(G))
+    G <- t(as.matrix(G))
+  ## Dimensions of the problem
+  Neq <- nrow(E)
+  Nx  <- ncol(E)
+  if (is.null(Nx)) Nx <- ncol(G)
+  Nineq <- nrow(G)
+  if (is.null(Nineq))
+    Nineq <- 0
+  if (is.null(Neq))
+    Neq <- 0
+  Range <- matrix(ncol = 2, nrow = Nx, NA)
 
-# con: constraints ; rhs: right hand side
-# First the equalities 
-    con <- E
-    rhs <- F
-    dir <- rep("==", Neq)
-# then the inequalities
-    if (Nineq > 0) {
-        con <- rbind(con, G)
-        rhs <- c(rhs, H)
-        dir <- c(dir, rep(">=", Nineq))
+  ## con: constraints ; rhs: right hand side
+  ## First the equalities 
+  con <- E
+  rhs <- F
+  dir <- rep("==", Neq)
+  ## then the inequalities
+  if (Nineq > 0) {
+    con <- rbind(con, G)
+    rhs <- c(rhs, H)
+    dir <- c(dir, rep(">=", Nineq))
+  }
+  
+  AllX   <- NULL
+  Summed <- rep(0,Nx)
+  nsum   <- 0
+
+  if (ispos) {
+
+    for (i in 1:Nx) {
+      obj <- rep(0, Nx)
+      obj[i] <- 1
+      lmin <- lp("min", obj, con, dir, rhs)
+      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
+             Range[i, 1] <- NA)
+      lmax <- lp("max", obj, con, dir, rhs)
+      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
+             Range[i, 2] <- NA)
+      if (central)
+        {
+          if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
+          if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
+        }
+      if (full) {
+        if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
+        if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
       }
-    
-    AllX   <- NULL
-    Summed <- rep(0,Nx)
-    nsum   <- 0
-
-    if (ispos) {
-
-      for (i in 1:Nx) {
-        obj <- rep(0, Nx)
-        obj[i] <- 1
-        lmin <- lp("min", obj, con, dir, rhs)
-        ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-            Range[i, 1] <- NA)
-        lmax <- lp("max", obj, con, dir, rhs)
-        ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-            Range[i, 2] <- NA)
-        if (central)
-                {
-                if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
-                if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
-                }
-        if (full) {
-                  if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
-                  if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
-                          }
-        }
-    } else{
-      # First test if problem is solvable...
-      Sol <- lsei(E=E,F=F,G=G,H=H)
-      if (Sol$residualNorm > tol)
-      { 
-         warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
-         return(Range)
-       } 
-
-    # double the number of unknowns: x -> x1 -x2, where x1>0 and x2>0
-      con <- cbind(con,-1*con)
-
-      for (i in 1:Nx) {
-        obj <- rep(0, 2*Nx)
-        obj[i]    <- 1
-        obj[Nx+i] <- -1
-
-        lmin <- lp("min", obj, con, dir, rhs)
-        ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-            Range[i, 1] <- NA)
-        lmax <- lp("max", obj, con, dir, rhs)
-        ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-            Range[i, 2] <- NA)
-            if (central)
-                {
-                if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
-                if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
-                }
-           if (full) {
-                if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
-                if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
-                     }
-        }
-     if (central) Summed <- Summed[1:Nx]- Summed[(Nx+1):(2*Nx)]
-     if (full)    AllX   <- AllX[1:Nx,]-AllX[(Nx+1):(2*Nx),]
     }
-    colnames(Range) <- c("min", "max")
-    xnames <- colnames(E)
-    if (is.null(xnames))
-        xnames <- colnames(G)
-    rownames(Range) <- xnames
-    if (central) Range<-cbind(Range, central = Summed/nsum)
-    if (full) Range<-cbind(Range, AllX)
-    return(Range)
+  } else{
+    ## First test if problem is solvable...
+    Sol <- lsei(E=E,F=F,G=G,H=H)
+    if (Sol$residualNorm > tol)
+      { 
+        warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
+        return(Range)
+      } 
+
+    ## double the number of unknowns: x -> x1 -x2, where x1>0 and x2>0
+    con <- cbind(con,-1*con)
+
+    for (i in 1:Nx) {
+      obj <- rep(0, 2*Nx)
+      obj[i]    <- 1
+      obj[Nx+i] <- -1
+
+      lmin <- lp("min", obj, con, dir, rhs)
+      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
+             Range[i, 1] <- NA)
+      lmax <- lp("max", obj, con, dir, rhs)
+      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
+             Range[i, 2] <- NA)
+      if (central)
+        {
+          if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
+          if (! any (is.na(lmax$solution)) && lmax$status==0) {Summed<- Summed + lmax$solution;nsum<-nsum+1}
+        }
+      if (full) {
+        if( lmin$status==0)     AllX <- cbind(AllX,lmin$solution)
+        if( lmax$status==0)     AllX <- cbind(AllX,lmax$solution)
+      }
+    }
+    if (central) Summed <- Summed[1:Nx]- Summed[(Nx+1):(2*Nx)]
+    if (full)    AllX   <- AllX[1:Nx,]-AllX[(Nx+1):(2*Nx),]
+  }
+  colnames(Range) <- c("min", "max")
+  xnames <- colnames(E)
+  if (is.null(xnames))
+    xnames <- colnames(G)
+  rownames(Range) <- xnames
+  if (central) Range<-cbind(Range, central = Summed/nsum)
+  if (full) Range<-cbind(Range, AllX)
+  return(Range)
 }
 
 
@@ -770,66 +770,66 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
                       ispos=FALSE,
                       tol=1e-8) 
 
-#------------------------------------------------------------------------
-# Given the linear constraints
-#                        E*X=F 
-#                        G*X>=H
-# and a set of variables described by the linear equations Var = EqA*X+EqB
-#
-# finds the minimum and maximum values of the variables
-# by successively minimising and maximising each linear combination, 
-# using linear programming
-# uses lpSolve - may fail (if frequently repeated)                       
-#------------------------------------------------------------------------
+  ##------------------------------------------------------------------------
+  ## Given the linear constraints
+  ##                        E*X=F 
+  ##                        G*X>=H
+  ## and a set of variables described by the linear equations Var = EqA*X+EqB
+  ##
+  ## finds the minimum and maximum values of the variables
+  ## by successively minimising and maximising each linear combination, 
+  ## using linear programming
+  ## uses lpSolve - may fail (if frequently repeated)                       
+  ##------------------------------------------------------------------------
 
 {
-# input consistency
-if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
-if (! is.matrix(EqA) & ! is.null(EqA)) EqA <- t(as.matrix(EqA))
+  ## input consistency
+  if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
+  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+  if (! is.matrix(EqA) & ! is.null(EqA)) EqA <- t(as.matrix(EqA))
 
-# Dimensions of the problem
-Neq    <- nrow(E)    # number of equations
-Nx     <- ncol(E)    # number of unknowns
-Nineq  <- nrow(G)    # number of inequalities
-if (is.null(Nineq)) Nineq <- 0
+  ## Dimensions of the problem
+  Neq    <- nrow(E)    # number of equations
+  Nx     <- ncol(E)    # number of unknowns
+  Nineq  <- nrow(G)    # number of inequalities
+  if (is.null(Nineq)) Nineq <- 0
 
-NVar   <- nrow(EqA)  # number of equations to minimise/maximise
-# con: constraints ; rhs: right hand side
-# First the equalities 
+  NVar   <- nrow(EqA)  # number of equations to minimise/maximise
+  ## con: constraints ; rhs: right hand side
+  ## First the equalities 
 
-con   <- E
-rhs   <- F
-dir   <- rep("==",Neq)
-if (Nineq > 0)
-   {
-   con   <- rbind(con,G)
-   rhs   <- c(rhs,H)
-   dir   <- c(dir,rep(">=",Nineq))
-   }
-Range <- matrix(ncol=2,nrow=NVar,NA)
+  con   <- E
+  rhs   <- F
+  dir   <- rep("==",Neq)
+  if (Nineq > 0)
+    {
+      con   <- rbind(con,G)
+      rhs   <- c(rhs,H)
+      dir   <- c(dir,rep(">=",Nineq))
+    }
+  Range <- matrix(ncol=2,nrow=NVar,NA)
 
-if (ispos) {
+  if (ispos) {
 
-  obj   <- vector(length = Nx)
+    obj   <- vector(length = Nx)
 
-  for (i in 1:NVar)
-  {
-   obj        <- EqA[i,]
-   lmin       <- lp("min",obj,con,dir,rhs)
-   ifelse (lmin$status == 0, Range[i,1] <- lmin$objval, Range[i,1] <- NA)
-   lmax       <- lp("max",obj,con,dir,rhs)
-   ifelse (lmax$status == 0, Range[i,2] <- lmax$objval, Range[i,2]  <- NA)
-  }
-} else{
-  # First test if problem is solvable...
-   Sol <- lsei(E=E,F=F,G=G,H=H)
-   if (Sol$residualNorm > tol)
-     { 
-      warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
-      return(Range)
-     } 
-  # double the number of unknowns: x -> x1 -x2, x1>0 and x2>0
+    for (i in 1:NVar)
+      {
+        obj        <- EqA[i,]
+        lmin       <- lp("min",obj,con,dir,rhs)
+        ifelse (lmin$status == 0, Range[i,1] <- lmin$objval, Range[i,1] <- NA)
+        lmax       <- lp("max",obj,con,dir,rhs)
+        ifelse (lmax$status == 0, Range[i,2] <- lmax$objval, Range[i,2]  <- NA)
+      }
+  } else{
+    ## First test if problem is solvable...
+    Sol <- lsei(E=E,F=F,G=G,H=H)
+    if (Sol$residualNorm > tol)
+      { 
+        warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
+        return(Range)
+      } 
+    ## double the number of unknowns: x -> x1 -x2, x1>0 and x2>0
     con <- cbind(con,-1*con)
     EqA <- cbind(EqA,-1*EqA)
 
@@ -837,20 +837,20 @@ if (ispos) {
       obj <- EqA[i,]
       lmin <- lp("min", obj, con, dir, rhs)
       ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-           Range[i, 1] <- NA)
+             Range[i, 1] <- NA)
       lmax <- lp("max", obj, con, dir, rhs)
       ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-            Range[i, 2] <- NA)
-        }
+             Range[i, 2] <- NA)
     }
+  }
 
-if (!is.null(EqB))
-{Range[,1]<-Range[,1]-EqB
- Range[,2]<-Range[,2]-EqB
-}
-colnames(Range) <- c("min","max")
-rownames(Range) <- rownames(EqA)
-return(Range)    # a 2-column matrix with the minimum and maximum value of each equation (variable)
+  if (!is.null(EqB))
+    {Range[,1]<-Range[,1]-EqB
+     Range[,2]<-Range[,2]-EqB
+   }
+  colnames(Range) <- c("min","max")
+  rownames(Range) <- rownames(EqA)
+  return(Range)    # a 2-column matrix with the minimum and maximum value of each equation (variable)
 
 } ########## END OF varranges ########## 
 
@@ -869,39 +869,39 @@ Solve <- function(A,                     # numeric matrix containing the coeffic
                   B=diag(nrow=nrow(A)),  # numeric matrix containing the right-hand sides of the equation; default=unity matrix
                   tol=sqrt(.Machine$double.eps)) # tolerance for selecting singular values
 
-#------------------------------------------------------------------------
-# Generalised inverse solution of Ax=B
-# note: solve is the R default, but requires square, positive definite A
-#------------------------------------------------------------------------
-    {
-     M <-ginv(A,tol)
-     if (is.null(M)) return(NULL)
-     B <- matrix(nrow=nrow(A),data=B)
-     X <- M %*% B
-     if (ncol(B) == 1)
-     {
-     xnames <- colnames(A)
-     X <- as.vector(X)
-     names (X) <- xnames
-     }
-     return(X)   # the generalised inverse solution, x, of Ax=B; if B is not specified: returns the generalised inverse of A
-    }
+  ##------------------------------------------------------------------------
+  ## Generalised inverse solution of Ax=B
+  ## note: solve is the R default, but requires square, positive definite A
+  ##------------------------------------------------------------------------
+  {
+    M <-ginv(A,tol)
+    if (is.null(M)) return(NULL)
+    B <- matrix(nrow=nrow(A),data=B)
+    X <- M %*% B
+    if (ncol(B) == 1)
+      {
+        xnames <- colnames(A)
+        X <- as.vector(X)
+        names (X) <- xnames
+      }
+    return(X)   ## the generalised inverse solution, x, of Ax=B; if B is not specified: returns the generalised inverse of A
+  }
 
 
 ################################################################################
 ## tridiag     : Solves tridiagonal system of linear equations                ##
 ################################################################################
 
-Solve.tridiag  <- function(diam1,   # (nonzero) elements below the diagonal
-                     dia,     # (nonzero) elements on the diagonal
-                     diap1,   # (nonzero) elements above the diagonal
-                     rhs=rep(0,times=length(dia))) # numeric vector containing right hand side
+Solve.tridiag  <- function(diam1,   ## (nonzero) elements below the diagonal
+                           dia,     ## (nonzero) elements on the diagonal
+                           diap1,   ## (nonzero) elements above the diagonal
+                           rhs=rep(0,times=length(dia))) # numeric vector containing right hand side
 
-#------------------------------------------------------------------------
-# Solves a tridiagonal system of equations
-#------------------------------------------------------------------------
+  ##------------------------------------------------------------------------
+  ## Solves a tridiagonal system of equations
+  ##------------------------------------------------------------------------
 
-    {
+  {
     Nmx <- length(dia) 
     if (length(diam1) != Nmx-1) stop("cannot solve tridiagonal problem - diam1 and dia not compatible")
     if (length(diap1) != Nmx-1) stop("cannot solve tridiagonal problem - diap1 and dia not compatible")
@@ -913,32 +913,32 @@ Solve.tridiag  <- function(diam1,   # (nonzero) elements below the diagonal
 
     return(sol$value)    # vector with solution of tridiagonal system
 
-    }
-    
+  }
+
 ################################################################################
 ## Solve.banded      : Solves banded system of linear equations               ##
 ################################################################################
 
 Solve.banded <- function(abd,   # (nonzero) bands, rotated row-wise or full square matrix
-                    nup,   # number of nonzero bands above the diagonal
-                    nlow,  # number of nonzero bands below the diagonal
-                    rhs=rep(0,times=ncol(abd)), # numeric vector containing right hand side
-                    full=(nrow(abd)==ncol(abd))) # if true: full matrix is passed, if false:banded
-#------------------------------------------------------------------------
-# Solves a banded system of equations
-#------------------------------------------------------------------------
+                         nup,   # number of nonzero bands above the diagonal
+                         nlow,  # number of nonzero bands below the diagonal
+                         rhs=rep(0,times=ncol(abd)), # numeric vector containing right hand side
+                         full=(nrow(abd)==ncol(abd))) # if true: full matrix is passed, if false:banded
+  ##------------------------------------------------------------------------
+  ## Solves a banded system of equations
+  ##------------------------------------------------------------------------
 
-    {
+  {
     Nmx  <- ncol(abd)
     nr   <- nrow(abd)
     if (full)     # full matrix was specified
       {
-      A <- abd
-      if (nrow(abd) != ncol(abd))  stop("cannot solve banded problem - nrows and ncols of abd are not the same, while the input matrix is said to be full")
-      Aext <- rbind(matrix(nc=ncol(A),nr=nup,0),A,matrix(nc=ncol(A),nr=nlow,0))
-      abd  <- matrix(nr=nup+nlow+1,nc=Nmx,data=
-         Aext[(col(Aext))<=row(Aext)&col(Aext)>=row(Aext)-nlow-nup])
-      nr   <- nrow(abd)
+        A <- abd
+        if (nrow(abd) != ncol(abd))  stop("cannot solve banded problem - nrows and ncols of abd are not the same, while the input matrix is said to be full")
+        Aext <- rbind(matrix(nc=ncol(A),nr=nup,0),A,matrix(nc=ncol(A),nr=nlow,0))
+        abd  <- matrix(nr=nup+nlow+1,nc=Nmx,data=
+                       Aext[(col(Aext))<=row(Aext)&col(Aext)>=row(Aext)-nlow-nup])
+        nr   <- nrow(abd)
       }
     Nabd <- 2*nlow+nup+1
     if (nr != nlow+nup+1)  stop("cannot solve banded problem - abd not compatible with nup and nlow")
@@ -951,7 +951,7 @@ Solve.banded <- function(abd,   # (nonzero) bands, rotated row-wise or full squa
                    indx=as.integer(rep(0,Nmx)),info=as.integer(0),IsError=as.logical(IsError))
     return(sol$beta)    # vector with solution of tridiagonal system                 
 
-    }
+  }
 
 ################################################################################
 ## xsample  : Samples linear problem with equality and inequality constraints ##
@@ -974,9 +974,9 @@ xsample <- function(A=NULL,             #Ax~=B
                     test=TRUE)          # if "test" test for hidden equalities
   {
 
-    #########################################
-    ## 1. definition of internal functions ##
-    #########################################
+#########################################
+### 1. definition of internal functions ##
+#########################################
     
     mirror <- function(q1,g,h,k=length(q),jmp)
       ## function ensuring that a jump from q1 to q2
@@ -1055,37 +1055,17 @@ xsample <- function(A=NULL,             #Ax~=B
         r <- xranges(E=NULL,F=NULL,g,h)
         s <- abs(r[,1]-r[,2])/n
         if (any (is.na(s)))
-        {warning(" problem is unbounded - setting jump length = 1")
-        s[is.na(s)] <- 1
-        }
+          {warning(" problem is unbounded - setting jump length = 1")
+           s[is.na(s)] <- 1
+         }
         return(s)
       }
 
 
-    #############################
-    ## 2. the xsample function ##
-    #############################
-# KS: test for equalities, hidden in inequalities...
-    if (test && !is.null(G))
-    {
-      xv <- varranges(E,F,G,H,EqA=G)
-      ii <- which (xv[,1]-xv[,2]==0)
-      if (length(ii)>0) { # if they exist: add regular equalities !
-      E  <- rbind(E,G[ii,])
-      F  <- c(F,xv[ii,1])
+#############################
+### 2. the xsample function ##
+#############################
 
-      G  <- G[-ii,]
-      H  <- H[-ii]
-      }
-      xr <- xranges(E,F,G,H)
-      ii <- which (xr[,1]-xr[,2]==0)
-      if (length(ii)>0)  # if they exist: add regular equalities !
-      {
-        dia <- diag(nrow=nrow(xr))
-        E  <- rbind(E,dia[ii,])
-        F  <- c(F,xr[ii,1])
-       }
-    }
     ## conversions vectors to matrices and checks
     if (is.vector(A)) A <- t(as.matrix(A))
     if (is.vector(E)) E <- t(as.matrix(E))
@@ -1102,6 +1082,29 @@ xsample <- function(A=NULL,             #Ax~=B
       }
     n <- length(x0)   
     
+    ## KS: test for equalities, hidden in inequalities...
+    if (test && !is.null(G))
+      {
+        xv <- varranges(E,F,G,H,EqA=G)
+        ii <- which (xv[,1]-xv[,2]==0)
+        if (length(ii)>0) { # if they exist: add regular equalities !
+          E  <- rbind(E,G[ii,])
+          F  <- c(F,xv[ii,1])
+
+          G  <- G[-ii,]
+          H  <- H[-ii]
+          if (length(H)==0) G <- H <- NULL
+        }
+        xr <- xranges(E,F,G,H)
+        ii <- which (xr[,1]-xr[,2]==0)
+        if (length(ii)>0)  # if they exist: add regular equalities !
+          {
+            dia <- diag(nrow=nrow(xr))
+            E  <- rbind(E,dia[ii,])
+            F  <- c(F,xr[ii,1])
+          }
+      }
+
     ## Z is an orthogonal matrix for which E%*%Z=0; it can serve as basis for the null space of E.
     ## all solutions for the equalities have the form x = x0 + Zq with q a random vector. 
     ## the vector q is varied in a random walk, using a MCMC with acceptance rate = 1. The inequality constraints Gx>H
@@ -1162,25 +1165,25 @@ xsample <- function(A=NULL,             #Ax~=B
       {
         q2 <- newq(q1,g,h,k,jmp)
         if (test(q2)) { q1 <- q2
-        naccepted=naccepted+1
+                        naccepted=naccepted+1
 
-        if (naccepted >= isave)
-        { isave <- isave + ou
-        ii <- ii + 1
-        x[ii,] <- x0+Z%*%q1
-        p[ii] <- prob(q1)
+                        if (naccepted >= isave)
+                          { isave <- isave + ou
+                            ii <- ii + 1
+                            x[ii,] <- x0+Z%*%q1
+                            p[ii] <- prob(q1)
 
-        if (fulloutput)  q[ii,] <- q1
-          }
-        }
+                            if (fulloutput)  q[ii,] <- q1
+                          }
+                      }
       }
 
     if (ii < Nrows) # remove rows with NA
-    {
-      x <- x[1:ii,]
-      p <- p[1:ii]
-      if (fulloutput)  q <- q[ii,]
-    }
+      {
+        x <- x[1:ii,]
+        p <- p[1:ii]
+        if (fulloutput)  q <- q[ii,]
+      }
     xnames <- colnames(A)
     if (is.null(xnames)) xnames <- colnames(E)
     if (is.null(xnames)) xnames <- colnames(G)
@@ -1199,8 +1202,8 @@ xsample <- function(A=NULL,             #Ax~=B
 ################################################################################
 
 varsample <- function(X,        # matrix of valid x-values, e.g. generated with x-sample
-                     EqA,      # numeric matrix containing the coefficients that define the variables
-                     EqB=NULL) # numeric vector containing the right-hand side of the variable equation
+                      EqA,      # numeric matrix containing the coefficients that define the variables
+                      EqB=NULL) # numeric vector containing the right-hand side of the variable equation
 {
   if (! is.matrix(EqA) & ! is.null(EqA)) EqA <- t(as.matrix(EqA))
   if (! is.matrix(X) & ! is.null(X)) X <- t(as.matrix(X))  
@@ -1209,6 +1212,6 @@ varsample <- function(X,        # matrix of valid x-values, e.g. generated with 
   Var <- NULL
   if (ncol(X) != ncol(EqA)) stop("matrix X and EqA not compatible")
   for (i in 1:nrow(X))
-  Var <- rbind(Var,t(EqA%*%X[i,]-EqB))
+    Var <- rbind(Var,t(EqA%*%X[i,]-EqB))
   return(Var)
 }
