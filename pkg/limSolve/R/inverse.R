@@ -1114,7 +1114,12 @@ xsample <- function(A=NULL,             #Ax~=B
       {
         Z <- Null(t(E)); Z[abs(Z)<tol] <- 0  #x=x0+Zq ; EZ=0
       } else { Z <- diag(n) }
-    
+    if(length(Z)==0)
+      {
+        warning("the problem has a single solution; this solution is returned as function value")
+        return(x0)
+      }
+
     if (!is.null(G))
       {
         g <- G%*%Z
