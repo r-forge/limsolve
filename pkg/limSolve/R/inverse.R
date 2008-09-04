@@ -1051,7 +1051,10 @@ xsample <- function(A=NULL,             #Ax~=B
 
     automatedjump <- function(g,h,n=5)
       {
-        if (is.null(g)) return(1)
+        if (is.null(g))
+          {warning(" problem is unbounded - setting jump length = 1")
+           return(1)
+         }
         r <- xranges(E=NULL,F=NULL,g,h)
         s <- abs(r[,1]-r[,2])/n
         if (any (is.na(s)))
