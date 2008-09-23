@@ -1076,22 +1076,50 @@ xsample <- function(A=NULL,             #Ax~=B
 
     norm <- function(x) sqrt(x%*%x)
 
-    automatedjump <- function(g,h,n=5)
+     automatedjump <- function(a,b,g,h,n=5)
       {
-        if (is.null(g))
-          {warning(" problem is unbounded - setting jump length = 1")
-           return(1)
+        if (is.null(g)) s1 <- rep(NA,k)
+        else
+          {
+            r <- xranges(E=NULL,F=NULL,g,h)
+            s1 <- abs(r[,1]-r[,2])/n
+          }
+        if (is.null(a)) s2 <- rep(NA,k)
+        else
+          {
+            estVar <- diag(var(b)) * solve(t(a)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+            estSd  <- sqrt(diag(estVar))
+            s2 <- estSd/25
+          }
+        s <- pmin(s1,s2,na.rm=T)
+        if (any (is.na(s)|s>1e+28))
+          {warning(" problem is unbounded - some jump lengths are set arbitrarily")
+           s[is.na(s)|s>1e+28] <- mean(s,na.rm=T)*100
          }
-        r <- xranges(E=NULL,F=NULL,g,h)
-        s <- abs(r[,1]-r[,2])/n
-        ii <- c(which(abs(r[,1])==1e30),which(abs(r[,2])==1e30))
-        if (length(ii)>0)
-          {warning(" problem is unbounded - setting jump length = 1")
-           s[ii] <- 1
-         }
+
+
+
+
+
+
+
         return(s)
       }
-
+#      automatedjump <- function(g,h,n=5)
+#      {
+#        if (is.null(g))
+#          {warning(" problem is unbounded - setting jump length = 1")
+#           return(1)
+#         }
+#        r <- xranges(E=NULL,F=NULL,g,h)
+#        s <- abs(r[,1]-r[,2])/n
+#        if (any (is.na(s)))
+#          {warning(" problem is unbounded - setting jump length = 1")
+#           s[is.na(s)] <- 1
+#         }
+#        return(s)
+#      }
+#
 
 #############################
 ### 2. the xsample function ##
@@ -1190,7 +1218,7 @@ xsample <- function(A=NULL,             #Ax~=B
         q[1,] <- q1
       }
     
-    if (is.null(jmp)) jmp <- automatedjump(g,h)
+    if (is.null(jmp)) jmp <- automatedjump(a,b,g,h) # automatedjump(g,h)
     if (type=="mirror") newq <- mirror
     if (type=="rda") newq <- rda
     if (type=="cda") newq <- cda
@@ -1202,7 +1230,7 @@ xsample <- function(A=NULL,             #Ax~=B
         q2 <- newq(q1,g,h,k,jmp)
         if (test(q2)) { q1 <- q2
                         naccepted=naccepted+1
-
+## hier zit een fout; enkel de accepted punten worden weggeschreven???
                         if (naccepted >= isave)
                           { isave <- isave + ou
                             ii <- ii + 1
