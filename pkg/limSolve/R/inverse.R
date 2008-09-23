@@ -372,8 +372,21 @@ linp <- function(E=NULL, # numeric matrix containing the coefficients of the equ
   ## the solution
   sol    <- lp("min",Cost,con,dir,rhs,int.vec=int.vec,...)
   mode   <- sol$status
-  if (mode == 2) {print("no feasible solution");IsError<-TRUE}
-  if (mode == 3) {print("error");IsError<-TRUE}
+  ## from the original code lp_lib.h
+  if (mode == -5) {print("unknown error");IsError<-TRUE}
+  if (mode == -4) {print("data ignored");IsError<-TRUE}
+  if (mode == -3) {print("no bfp");IsError<-TRUE}
+  if (mode == -2) {print("no memory");IsError<-TRUE}
+  if (mode == -1) {print("problem not run");IsError<-TRUE}
+  if (mode == 2) {print("problem infeasible");IsError<-TRUE}
+  if (mode == 3) {print("problem unbounded");IsError<-TRUE}
+  if (mode == 4) {print("problem degenerate");IsError<-TRUE}
+  if (mode == 5) {print("problem failed");IsError<-TRUE}
+  if (mode == 6) {print("user aborted");IsError<-TRUE}
+  if (mode == 7) {print("timed out");IsError<-TRUE}
+  if (mode == 8) {print("running");IsError<-TRUE}
+  if (mode == 9) {print("presolved");IsError<-TRUE}
+
   X           <- sol$solution
   if (!ispos) X <- X[1:Nx]-X[(Nx+1):(2*Nx)]
   solutionNorm<- sol$objval
@@ -695,11 +708,13 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
       obj <- rep(0, Nx)
       obj[i] <- 1
       lmin <- lp("min", obj, con, dir, rhs)
-      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-             Range[i, 1] <- NA)
+      if(lmin$status == 0) Range[i, 1] <- lmin$objval else
+      if(lmin$status == 3) Range[i, 1] <- -1e30 else
+                           Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
-      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-             Range[i, 2] <- NA)
+      if(lmax$status == 0) Range[i, 2] <- lmax$objval else
+      if(lmax$status == 3) Range[i, 2] <- 1e30 else
+                           Range[i, 2] <- NA
       if (central)
         {
           if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
@@ -728,11 +743,13 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
       obj[Nx+i] <- -1
 
       lmin <- lp("min", obj, con, dir, rhs)
-      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-             Range[i, 1] <- NA)
+      if(lmin$status == 0) Range[i, 1] <- lmin$objval else
+      if(lmin$status == 3) Range[i, 1] <- -1e30 else
+                           Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
-      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-             Range[i, 2] <- NA)
+      if(lmax$status == 0) Range[i, 2] <- lmax$objval else
+      if(lmax$status == 3) Range[i, 2] <- 1e30 else
+                           Range[i, 2] <- NA
       if (central)
         {
           if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
@@ -792,7 +809,11 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
   Neq    <- nrow(E)    # number of equations
   Nx     <- ncol(E)    # number of unknowns
   Nineq  <- nrow(G)    # number of inequalities
-  if (is.null(Nineq)) Nineq <- 0
+
+  if (is.null(Nineq))
+    Nineq <- 0
+  if (is.null(Neq))
+    Neq <- 0
 
   NVar   <- nrow(EqA)  # number of equations to minimise/maximise
   ## con: constraints ; rhs: right hand side
@@ -817,9 +838,13 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
       {
         obj        <- EqA[i,]
         lmin       <- lp("min",obj,con,dir,rhs)
-        ifelse (lmin$status == 0, Range[i,1] <- lmin$objval, Range[i,1] <- NA)
+        if (lmin$status == 0) Range[i,1] <- lmin$objval else
+        if (lmin$status == 3) Range[i,1] <- -1e30       else
+                              Range[i,1] <- NA
         lmax       <- lp("max",obj,con,dir,rhs)
-        ifelse (lmax$status == 0, Range[i,2] <- lmax$objval, Range[i,2]  <- NA)
+        if (lmax$status == 0) Range[i,2] <- lmax$objval else
+        if (lmax$status == 3) Range[i,2] <- 1e30        else
+                              Range[i,2]  <- NA
       }
   } else{
     ## First test if problem is solvable...
@@ -836,11 +861,13 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
     for (i in 1:NVar) {
       obj <- EqA[i,]
       lmin <- lp("min", obj, con, dir, rhs)
-      ifelse(lmin$status == 0, Range[i, 1] <- lmin$objval,
-             Range[i, 1] <- NA)
+      if(lmin$status == 0) Range[i, 1] <- lmin$objval else
+      if(lmin$status == 3) Range[i, 1] <- -1e30 else
+                           Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
-      ifelse(lmax$status == 0, Range[i, 2] <- lmax$objval,
-             Range[i, 2] <- NA)
+      if(lmax$status == 0) Range[i, 2] <- lmax$objval else
+      if(lmax$status == 3) Range[i, 2] <- 1e30 else
+                           Range[i, 2] <- NA
     }
   }
 
@@ -1057,9 +1084,10 @@ xsample <- function(A=NULL,             #Ax~=B
          }
         r <- xranges(E=NULL,F=NULL,g,h)
         s <- abs(r[,1]-r[,2])/n
-        if (any (is.na(s)))
+        ii <- c(which(abs(r[,1])==1e30),which(abs(r[,2])==1e30))
+        if (length(ii)>0)
           {warning(" problem is unbounded - setting jump length = 1")
-           s[is.na(s)] <- 1
+           s[ii] <- 1
          }
         return(s)
       }
@@ -1197,8 +1225,8 @@ xsample <- function(A=NULL,             #Ax~=B
     if (is.null(xnames)) xnames <- colnames(G)
     colnames (x) <- xnames
 
-    xsample <- list(X=x,acceptedratio=naccepted/iter,p=p)
-    if (fulloutput) xsample <- list(X=x,acceptedratio=naccepted/iter,Q=q,p=p)
+    xsample <- list(X=x,acceptedratio=naccepted/iter,p=p,jmp=jmp)
+    if (fulloutput) xsample <- list(X=x,acceptedratio=naccepted/iter,Q=q,p=p,jmp=jmp)
 
     return(xsample)
   }
