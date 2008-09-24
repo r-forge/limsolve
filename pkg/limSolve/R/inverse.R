@@ -993,6 +993,7 @@ xsample <- function(A=NULL,             #Ax~=B
                     sdB=1,              #standard deviations on B (weighting)
                     iter=3000,          #number of iterations
                     outputlength = iter, # number of rows of output matrix
+                    burninlength = NULL,
                     type="mirror", # one of mirror, cda, da ; cda and da need to have a closed space (inequality constraints)!!
                     jmp=NULL,             #jump length of the transformed variables q: x=x0+Zq (only if type=mirror)
                     tol=sqrt(.Machine$double.eps), # accuracy of Z,g,h: smaller numbers are set to zero to avoid rounding errors
@@ -1076,59 +1077,41 @@ xsample <- function(A=NULL,             #Ax~=B
 
     norm <- function(x) sqrt(x%*%x)
 
-     automatedjump <- function(a,b,g,h,n=5)
+    automatedjump <- function(a,b,g,h,g.scale=5,a.scale=5)
       {
         if (is.null(g)) s1 <- rep(NA,k)
         else
           {
             r <- xranges(E=NULL,F=NULL,g,h)
-            s1 <- abs(r[,1]-r[,2])/n
+            s1 <- abs(r[,1]-r[,2])/g.scale
           }
-        if (is.null(a)) s2 <- rep(NA,k)
+        if (is.null(A)|qr(a)$rank<k) s2 <- rep(NA,k)
         else
           {
-            estVar <- diag(var(b)) * solve(t(a)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+            estVar <- solve(t(a)%*%diag(sdB^-2)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
             estSd  <- sqrt(diag(estVar))
-            s2 <- estSd/25
+            s2 <- estSd/a.scale
           }
         s <- pmin(s1,s2,na.rm=T)
         if (any (is.na(s)|s>1e+28))
           {warning(" problem is unbounded - some jump lengths are set arbitrarily")
            s[is.na(s)|s>1e+28] <- mean(s,na.rm=T)*100
          }
-
-
-
-
-
-
-
         return(s)
       }
-#      automatedjump <- function(g,h,n=5)
-#      {
-#        if (is.null(g))
-#          {warning(" problem is unbounded - setting jump length = 1")
-#           return(1)
-#         }
-#        r <- xranges(E=NULL,F=NULL,g,h)
-#        s <- abs(r[,1]-r[,2])/n
-#        if (any (is.na(s)))
-#          {warning(" problem is unbounded - setting jump length = 1")
-#           s[is.na(s)] <- 1
-#         }
-#        return(s)
-#      }
-#
 
+    
 #############################
 ### 2. the xsample function ##
 #############################
 
     ## conversions vectors to matrices and checks
-    if (is.vector(A)) A <- t(as.matrix(A))
-    if (is.vector(E)) E <- t(as.matrix(E))
-    if (is.vector(G)) G <- t(as.matrix(G))
+    if (is.data.frame(A)) A <- as.matrix(A)
+    if (is.data.frame(A)) A <- as.matrix(A)
+    if (is.data.frame(A)) A <- as.matrix(A)
+    if (is.vector(A)) A <- t(A)
+    if (is.vector(E)) E <- t(E)
+    if (is.vector(G)) G <- t(G)
     
     ## find a particular solution x0
     if (is.null(x0))
@@ -1178,6 +1161,7 @@ xsample <- function(A=NULL,             #Ax~=B
         warning("the problem has a single solution; this solution is returned as function value")
         return(x0)
       }
+    k <- ncol(Z)
 
     if (!is.null(G))
       {
@@ -1193,28 +1177,31 @@ xsample <- function(A=NULL,             #Ax~=B
       {
         a <- A%*%Z
         b <- B-A%*%x0                          #aq-b~=0
+        v <- svd(a,nv=k)$v                     #transformation q <- t(v)q for better convergence
+        a <- a%*%v                             #transformation a <- av
+        g <- g%*%v                             #transformation g <- gv
+        Z <- Z%*%v                             #transformation Z <- Zv
+        sdB <- rep(sdB,length=length(b))
         prob <- function(q) prod(dnorm(b,a%*%q,sdB))
         test <- function(q2) (prob(q2)/prob(q1))>runif(1) #metropolis criterion
       } else {
         prob <- function(q) 1
         test <- function(q2) TRUE
       }
+
     outputlength <- min (outputlength,iter)
     ou <- ceiling(iter/outputlength)
-    iter <- iter - iter%%ou
-    outputlength <-iter%/%ou
-    Nrows <- outputlength + (ou>1)
-    k <- ncol(Z)
+
     q1 <- rep(0,k)
-    x <- matrix(ncol=n,nrow=Nrows,dimnames=list(NULL,colnames(A)))
+    x <- matrix(ncol=n,nrow=outputlength,dimnames=list(NULL,colnames(A)))
     x[1,] <- x0
     naccepted <- 1
-    p <- vector(length=Nrows) # probability distribution
+    p <- vector(length=) # probability distribution
     p[1] <- prob(q1)
 
     if (fulloutput)
       {
-        q <- matrix(ncol=k,nrow=Nrows)
+        q <- matrix(ncol=k,nrow=outputlength)
         q[1,] <- q1
       }
     
@@ -1223,31 +1210,31 @@ xsample <- function(A=NULL,             #Ax~=B
     if (type=="rda") newq <- rda
     if (type=="cda") newq <- cda
 
-    isave <- ou
-    ii <- 1
-    for (i in 2:iter)
+    ## ##################
+    ## the random walk ##
+    ## ##################
+    if (!is.null(burninlength))
+      for(i in 1:burninlength)
+        {
+          q2 <- newq(q1,g,h,k,jmp)
+          if (test(q2)) q1 <- q2
+        }
+    for (i in 2:outputlength)
       {
-        q2 <- newq(q1,g,h,k,jmp)
-        if (test(q2)) { q1 <- q2
-                        naccepted=naccepted+1
-## hier zit een fout; enkel de accepted punten worden weggeschreven???
-                        if (naccepted >= isave)
-                          { isave <- isave + ou
-                            ii <- ii + 1
-                            x[ii,] <- x0+Z%*%q1
-                            p[ii] <- prob(q1)
-
-                            if (fulloutput)  q[ii,] <- q1
-                          }
-                      }
+        for (ii in 1:ou)
+          {
+            q2 <- newq(q1,g,h,k,jmp)
+            if (test(q2)) { q1 <- q2
+                            naccepted <- naccepted+1 }
+          }
+        x[i,] <- x0+Z%*%q1
+        p[i] <- prob(q1)
+        if (fulloutput)  q[i,] <- q1
       }
+    ## ##################
+    ## end random walk ##
+    ## ##################
 
-    if (ii < Nrows) # remove rows with NA
-      {
-        x <- x[1:ii,]
-        p <- p[1:ii]
-        if (fulloutput)  q <- q[ii,]
-      }
     xnames <- colnames(A)
     if (is.null(xnames)) xnames <- colnames(E)
     if (is.null(xnames)) xnames <- colnames(G)
@@ -1262,7 +1249,7 @@ xsample <- function(A=NULL,             #Ax~=B
 
 
 ################################################################################
-## varsample  : Samples variable equations                              ##
+### varsample  : Samples variable equations                              ##
 ################################################################################
 
 varsample <- function(X,        # matrix of valid x-values, e.g. generated with x-sample
