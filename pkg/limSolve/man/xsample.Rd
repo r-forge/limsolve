@@ -10,7 +10,7 @@
  \deqn{Gx>=h}
  where Ex=F have to be met exactly, and \eqn{Ax\simeq B} approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
-G=NULL, H=NULL, sdB=1, iter=3000, outputlength=iter,
+G=NULL, H=NULL, sdB=1, iter=3000, outputlength=iter,burninlength=NULL,
 type = "mirror", jmp = NULL, tol=sqrt(.Machine$double.eps),
 x0=NULL, fulloutput = FALSE, test=TRUE)}
 \arguments{
@@ -24,6 +24,7 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   \item{sdB }{vector with standard deviation on B, used for weighing; default = equal weights}
   \item{iter }{integer determining the number of iterations}
   \item{outputlength} { number of iterations kept in the output; at most equal to \code{iter}}
+  \item{burninlength}{a number of extra iterations, performed at first, to "warm up" the algorithm. }
   \item{type }{type of algorithm: one of: "mirror", (mirroring algorithm), "rda" (random directions algorithm) or "cda" (coordinates directions algorithm)}
   \item{jmp }{jump length of the transformed variables q: \eqn{x=x0+Zq} (only if \code{type}=="mirror"); if jmp is NULL, a reasonable value is determined by xsample,
   depending on the size of the NULL space.}
