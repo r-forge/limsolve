@@ -1082,10 +1082,10 @@ xsample <- function(A=NULL,             #Ax~=B
         if (is.null(g)) s1 <- rep(NA,k)
         else
           {
-            r <- xranges(E=NULL,F=NULL,g,h)
-            s1 <- abs(r[,1]-r[,2])/g.scale
+            q_ranges <- xranges(E=NULL,F=NULL,g,h)
+            s1 <- abs(q_ranges[,1]-q_ranges[,2])/g.scale
           }
-        if (is.null(A)|qr(a)$rank<k) s2 <- rep(NA,k)
+        if (is.null(A)) s2 <- rep(NA,k)
         else
           {
             estVar <- solve(t(a)%*%diag(sdB^-2)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
@@ -1093,9 +1093,17 @@ xsample <- function(A=NULL,             #Ax~=B
             s2 <- estSd/a.scale
           }
         s <- pmin(s1,s2,na.rm=T)
-        if (any (is.na(s)|s>1e+28))
-          {warning(" problem is unbounded - some jump lengths are set arbitrarily")
-           s[is.na(s)|s>1e+28] <- mean(s,na.rm=T)*100
+        s[s>tol^-2] <- NA
+        if (any (is.na(s)))
+          {
+           if (all(is.na(s)))
+             {
+               warning(" problem is unbounded - all jump lengths are set to 1")
+               s[] <- 1
+             } else {
+               warning(" problem is unbounded - some jump lengths are set arbitrarily")
+               s[is.na(s)] <- mean(s,na.rm=T)*100
+             }
          }
         return(s)
       }
@@ -1179,12 +1187,20 @@ xsample <- function(A=NULL,             #Ax~=B
         b <- B-A%*%x0                          #aq-b~=0
         v <- svd(a,nv=k)$v                     #transformation q <- t(v)q for better convergence
         a <- a%*%v                             #transformation a <- av
-        g <- g%*%v                             #transformation g <- gv
+        if (!is.null(G)) g <- g%*%v            #transformation g <- gv
         Z <- Z%*%v                             #transformation Z <- Zv
         sdB <- rep(sdB,length=length(b))
         prob <- function(q) prod(dnorm(b,a%*%q,sdB))
         test <- function(q2) (prob(q2)/prob(q1))>runif(1) #metropolis criterion
       } else {
+##         if (!is.null(G))
+##           {
+##             q_ranges <- xranges(G=g,H=h,full=T)
+##             q_extreme <- t(q_ranges[,-(1:2)])      # these are the values of q at the edges of the feasible space
+##             r <- princomp(q_extreme)$loadings      # transformation matrix r; q'=t(r)q
+##             g <- g%*%r
+##             Z <- Z%*%r
+##           }
         prob <- function(q) 1
         test <- function(q2) TRUE
       }
@@ -1196,7 +1212,7 @@ xsample <- function(A=NULL,             #Ax~=B
     x <- matrix(ncol=n,nrow=outputlength,dimnames=list(NULL,colnames(A)))
     x[1,] <- x0
     naccepted <- 1
-    p <- vector(length=) # probability distribution
+    p <- vector(length=outputlength) # probability distribution
     p[1] <- prob(q1)
 
     if (fulloutput)
