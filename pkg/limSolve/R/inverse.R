@@ -1124,7 +1124,7 @@ xsample <- function(A=NULL,             #Ax~=B
     ## find a particular solution x0
     if (is.null(x0))
       {
-        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H)
+        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H,Wa=1/sdB)
         if (l$residualNorm>1e-6)
           stop("no particular solution found;incompatible constraints")
         else
@@ -1193,14 +1193,31 @@ xsample <- function(A=NULL,             #Ax~=B
         prob <- function(q) prod(dnorm(b,a%*%q,sdB))
         test <- function(q2) (prob(q2)/prob(q1))>runif(1) #metropolis criterion
       } else {
-##         if (!is.null(G))
-##           {
-##             q_ranges <- xranges(G=g,H=h,full=T)
-##             q_extreme <- t(q_ranges[,-(1:2)])      # these are the values of q at the edges of the feasible space
-##             r <- princomp(q_extreme)$loadings      # transformation matrix r; q'=t(r)q
-##             g <- g%*%r
-##             Z <- Z%*%r
-##           }
+                                        # transforming g and h
+                                        #        if (!is.null(G))
+                                        #          {
+                                        #            q_ranges <- xranges(G=g,H=h,full=T)
+                                        #                                        # ##########################
+                                        #                                        # # if there's not enough elements in q_ranges, we make the system bounded
+                                        #                                        # ###########################
+                                        #            if (ncol(q_ranges)<k+2& ncol(q_ranges)>3)
+                                        #              {
+                                        #                warning(" problem is unbounded - all jump lengths are set to 1")
+                                        #                g2 <- rbind(g,diag(k),-diag(k))
+                                        #                q_maxdist <- min(tol^-1,max(dist(q_ranges[,-(1:2)])) * 1000)
+                                        #                h2 <- c(h,rep(-q_maxdist,2*k))
+                                        #                q_ranges <- xranges(G=g2,H=h2,full=T)
+                                        #              }
+        
+                                        #            q_extreme <- t(q_ranges[,-(1:2)])         # these are the values of q at the edges of the feasible space
+                                        #            r <- princomp(q_extreme)$loadings   # transformation matrix r; q'=t(r)q
+                                        #            g <- g%*%r
+                                        #            Z <- Z%*%r
+
+                                        #            ## v <- svd(g,nv=k)$v
+                                        #            ## g <- g%*%v
+                                        #            ## Z <- Z%*%v
+                                        #          }
         prob <- function(q) 1
         test <- function(q2) TRUE
       }
