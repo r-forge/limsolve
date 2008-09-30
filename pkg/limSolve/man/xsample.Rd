@@ -38,8 +38,11 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   a list containing:
   \item{X }{matrix whose rows contain the sampled values of x}
   \item{acceptedratio }{ratio of acceptance (i.e. the ratio of the accepted runs / total iterations)}
-  \item{p }{only outputted if fulloutput is TRUE: probability vector for all samples (e.g. one value for each row of \code{X})}
   \item{Q }{only outputted if fulloutput is TRUE: the transformed samples Q}
+  \item{p }{only outputted if fulloutput is TRUE: probability vector for
+    all samples (e.g. one value for each row of \code{X})}
+  \item{jmp }{the jump length used for the random walk. Can be used to
+    check the automated jump length}
 }
 \author{Karel Van den Meersche<k.vdMeersche@nioo.knaw.nl>
   \cr Karline Soetaert <k.soetaert@nioo.knaw.nl>}
