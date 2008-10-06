@@ -446,9 +446,10 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
   ## Setup problem
   ##------------------------------------------------------------------------
   ## input consistency
-  if (! is.matrix(E) & ! is.null(E)) E <- t(as.matrix(E))
-  if (! is.matrix(A) & ! is.null(A)) A <- t(as.matrix(A))
-  if (! is.matrix(G) & ! is.null(G)) G <- t(as.matrix(G))
+
+  if (is.vector(E) & length(F)==1) E <- t(E) else if (! is.matrix(E) & ! is.null(E)) E <- as.matrix(E)
+  if (is.vector(A) & length(B)==1) A <- t(A) else if (! is.matrix(A) & ! is.null(A)) A <- as.matrix(A)
+  if (is.vector(G) & length(H)==1) G <- t(G) else if (! is.matrix(G) & ! is.null(G)) G <- as.matrix(G)
   if (! is.matrix(F) & ! is.null(F)) F <- as.matrix(F)
   if (! is.matrix(B) & ! is.null(B)) B <- as.matrix(B)
   if (! is.matrix(H) & ! is.null(H)) H <- as.matrix(H)
