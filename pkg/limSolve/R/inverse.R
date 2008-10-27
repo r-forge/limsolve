@@ -1125,7 +1125,7 @@ xsample <- function(A=NULL,             #Ax~=B
     ## find a particular solution x0
     if (is.null(x0))
       {
-        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H,Wa=1/sdB)
+        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H)#,Wa=1/sdB)
         if (l$residualNorm>1e-6)
           stop("no particular solution found;incompatible constraints")
         else
