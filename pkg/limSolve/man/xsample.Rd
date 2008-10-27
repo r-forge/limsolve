@@ -6,16 +6,16 @@
  
  The monte carlo method produces a sample solution for 
  \deqn{Ex=f}
- \deqn{Ax\simeq B}
+ \deqn{Ax\simeq B}{Ax~=B}
  \deqn{Gx>=h}
- where Ex=F have to be met exactly, and \eqn{Ax\simeq B} approximately.}
+ where \eqn{Ex=F} have to be met exactly, and \eqn{Ax\simeq B}{Ax~=B} approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
 G=NULL, H=NULL, sdB=1, iter=3000, outputlength=iter,burninlength=NULL,
 type = "mirror", jmp = NULL, tol=sqrt(.Machine$double.eps),
 x0=NULL, fulloutput = FALSE, test=TRUE)}
 \arguments{
   \item{A }{numeric matrix containing the coefficients of the
-    (approximate) equality constraints, \eqn{Ax\simeq B}}
+    (approximate) equality constraints, \eqn{Ax\simeq B}{Ax~=B}}
   \item{B }{numeric vector containing the right-hand side of the (approximate) equality constraints}
   \item{E }{numeric matrix containing the coefficients of the (exact) equality constraints, \eqn{Ex=F}}
   \item{F }{numeric vector containing the right-hand side of the (exact) equality constraints}
