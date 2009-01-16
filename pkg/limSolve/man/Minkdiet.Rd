@@ -6,18 +6,20 @@
 using C and N isotope ratios (d13C and d15N). 
 
 The data consist of 
-\item 1. the input matrix \code{Prey}, which contains the C (1st row) and N (2nd row) isotopic values of the prey items (columns), corrected for fractionation.
-\item 2. the input vector \code{Mink}, with the C and N isotopic value of the predator, mink 
-
+\enumerate{
+\item the input matrix \code{Prey}, which contains the C (1st row) and N (2nd row) isotopic values of the prey items (columns), corrected for fractionation.
+\item the input vector \code{Mink}, with the C and N isotopic value of the predator, mink
+}
 There are seven prey items as food sources: 
-\item (*) fish
-\item (*) mussels
-\item (*) crabs
-\item (*) shrimp
-\item (*) rodents
-\item (*) amphipods
-\item (*) ducks
-
+  \itemize{
+\item fish
+\item mussels
+\item crabs
+\item shrimp
+\item rodents
+\item amphipods
+\item ducks
+}
 
 The d13C and d15N for each of these prey items, and for mink (the predator) was assessed. The isotopic values of the preys were corrected for fractionation.
 
@@ -42,9 +44,11 @@ The first two equations calculate the isotopic ratio of the consumer (Mink) as a
 As there are 7 unknowns and only 3 equations, the model is UNDERdetermined, i.e. there exist an infinite amount of solutions.
 
 This model can be solved by various techniques:
-\item (1) least distance programming will select the "simplest" solution. See \code{\link{ldei}}.
-\item (2) the remaining uncertainty ranges of the fractions can be estimated using linear programming. See \code{\link{xranges}}
-\item (3) the statistical distribution of the fractions can be estimated using a MCMC algorithm which takes a sample of the solution space. See \code{\link{xsample}}
+\enumerate{
+\item least distance programming will select the "simplest" solution. See \code{\link{ldei}}.
+\item the remaining uncertainty ranges of the fractions can be estimated using linear programming. See \code{\link{xranges}}
+\item the statistical distribution of the fractions can be estimated using a MCMC algorithm which takes a sample of the solution space. See \code{\link{xsample}}
+}
 }
 \usage{Minkdiet}
 \format{a list with matrix \code{Prey} and vector \code{Mink}. 

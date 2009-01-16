@@ -6,14 +6,16 @@
 based on the pigment composition of the algal groups (measured in the laboratory) and the pigment composition of the field sample.  
 
 In the example there are 8 types of \bold{algae}: 
-\item (*) Prasinophytes
-\item (*) Dinoflagellates
-\item (*) Cryptophytes
-\item (*) Haptophytes type 3 (Hapto3s)
-\item (*) Haptophytes type 4 (Hapto4s)
-\item (*) Chlorophytes
-\item (*) Cynechococcus
-\item (*) Diatoms
+  \itemize{
+\item Prasinophytes
+\item Dinoflagellates
+\item Cryptophytes
+\item Haptophytes type 3 (Hapto3s)
+\item Haptophytes type 4 (Hapto4s)
+\item Chlorophytes
+\item Cynechococcus
+\item Diatoms
+}
 
 and 12 \bold{pigments}:
 \cr \code{Perid} = Peridinin, 
@@ -31,9 +33,10 @@ and 12 \bold{pigments}:
 
 
 The input data consist of: 
+  \enumerate{
 \item 1. the pigment composition of the various algal groups, for instance determined from cultures (the Southern Ocean example -table 4- in Mackey et al., 1996) 
 \item 2. the pigment composition of a field sample.
-
+}
 Based on these data, the algal composition of the field sample is estimated, 
 under the assumption that the pigment composition of the field sample is a weighted avertage of the pigment
 composition of algae present in the sample, where weighting is proportional to their biomass.
@@ -62,11 +65,12 @@ and the inequalities ensure that fractions are positive numbers
 \deqn{p[B] > 0}}
 \usage{Chemtax}
 \format{A list with the input ratio matrix (\code{Ratio}) and a vector with the field data (\code{Field})
+  \itemize{
 \item The input ratio matrix \code{Ratio} contains the pigment compositions (columns) for each algal group (rows); 
 the compositions are scaled relative to \code{Chla} (last column).
 \item  The vector with the \code{Field} data contains the pigment composition of a sample in the field, also scaled relative to \code{Chla}; 
 the pigments are similarly ordened as for the input ratio matrix.
-
+}
 The rownames of matrix \code{Ratio} are the algal group names, columnames of \code{Ratio} (=names of \code{Field}) are the pigments}
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
 \examples{# 1. Graphical representation of the chemtax example input data
@@ -110,14 +114,14 @@ barplot(X,names=rownames(Chemtax$Ratio),col=heat.colors(8),
 # jump length not too large or NO solutions aer found!
 xs <- xsample(t(AA),BB,EE,FF,GG,HH, sdB=0.01, jmp=0.025)$X
 pairs(xs, main= "Chemtax, Bayesian sample")}
-\references{\item Mackey MD, Mackey DJ, Higgins HW, Wright SW, 1996. 
+\references{Mackey MD, Mackey DJ, Higgins HW, Wright SW, 1996.
 CHEMTAX - A program for estimating class abundances from chemical markers: 
 Application to HPLC measurements of phytoplankton. Marine Ecology-Progress Series 144 (1-3): 265-283.
 
-\item Van den Meersche, K., Soetaert, K., Middelburg, J., 2008. 
+Van den Meersche, K., Soetaert, K., Middelburg, J., 2008.
 A Bayesian compositional estimator for microbial taxonomy based on biomarkers. Limnology and Oceanography Methods, 6, 190-199.
 
-\item R-package \code{BCE}
+R-package \code{BCE}
 }
 \seealso{\code{\link{lsei}}, the function to solve for the algal composition of the field sample}
 \keyword{datasets}
