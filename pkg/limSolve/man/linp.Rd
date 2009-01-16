@@ -26,7 +26,7 @@ Also note that sometimes multiple solutions exist for the same problem.}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
   \item{Cost }{numeric vector containing the coefficients of the cost function; if the Cost a names attribute, and neither the columns of E nor G have a name, they will be used to label the output}
   \item{ispos}{logical, when TRUE then unknowns must be positive (this is the original linear programming problem)}
-  \item{int.vec} {when not NULL, Numeric vector giving the indices of variables that are required to be integer. The length of this vector will therefore be the number of integer variables.}
+  \item{int.vec}{when not NULL, Numeric vector giving the indices of variables that are required to be integer. The length of this vector will therefore be the number of integer variables.}
   \item{verbose }{logical to print error messages}
   \item{... }{extra arguments passed to R-function \code{lp}}
 }

@@ -77,16 +77,20 @@ pairs(xs, main="Chemtax 1000 solutions - 2000 iterations")
 
      }
 \details{The algorithm proceeds in two steps.
-	\item (1) the equality constraints \eqn{Ex=F} are eliminated, and the system \eqn{Ex=f}, \eqn{Gx>=h} is rewritten as \eqn{G(p+Zq)>= h}, 
+\enumerate{
+	\item  the equality constraints \eqn{Ex=F} are eliminated, and the system \eqn{Ex=f}, \eqn{Gx>=h} is rewritten as \eqn{G(p+Zq)>= h},
   i.e. containing only inequality constraints and where Z is a basis for the null space of E.
-	\item (2) the probability distribution of \eqn{q} is sampled numerically using a random walk (based on the Metropolis algorithm). 
+	\item  the probability distribution of \eqn{q} is sampled numerically using a random walk (based on the Metropolis algorithm).
+}
+
   There are three algorithms for selecting new samples: \code{rda}, \code{cda} (two hit-and-run algorithms) and a novel \code{mirror} algoithm.
+  \itemize{
 	\item In the \code{rda} algorithm first a random direction is selected, and the new sample obtained by uniformly sampling the line 
   connecting the old sample and the intersection with the planes defined by the inequality constraints.
   \item the \code{cda} algorithm is similar, except that the direction is chosen along one of the coordinate axes.  
   \item the \code{mirror} algorithm is unpublished; it uses the inequality constraints as "reflecting planes" along which jumps are reflected.
-\cr In contrast to \code{cda} and \code{rda}, this algorithm also works with unbounded problems (i.e. for which some of the unknowns can attain Inf).
-
+ In contrast to \code{cda} and \code{rda}, this algorithm also works with unbounded problems (i.e. for which some of the unknowns can attain Inf).
+}
 For more information, see the package vignette \code{vignette(xsample)} or the file xsample.pdf in the packages \file{docs} subdirectory.
   
 Raftery and Lewis (1996) suggest a minimum of 3000 iterations to reach the extremes

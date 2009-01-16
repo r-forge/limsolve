@@ -29,6 +29,7 @@ GLK1,  PGI1,  PFKA,  FBP, FBA, TPIA, GAPA, PGK, GPMA, ENO, PPSA, PYKA, ACEE, ZWF
  ACUP, LACUP, FORUP, ETHUP, SUCCUP, PYRUP, PIUP, O2TX, CO2TX, ATPM, ADK, Growth
 
 The lsei model contains:
+  \itemize{
 \item 54 equalities (Ax=B): the 53 mass balances (one for each substance) and one equation
 that sets the ATP drain flux for constant maintenance requirements to a fixed value (5.87)
 \item 70 unknowns (x), the reaction rates
@@ -36,7 +37,7 @@ that sets the ATP drain flux for constant maintenance requirements to a fixed va
 The last 34 inequalities impose that the reaction rates have to be
 positive (for unidirectional reactions only).
 \item 1 functions that has to be maximised, the biomass production (growth).
-
+}
 As there are more unknowns (70) than equations (54), there exist an infinite amount of solutions
 (it is an underdetermined problem).
 }
@@ -103,8 +104,9 @@ segments(xr[ii,1],1:nr,xr[ii,2],1:nr)
 mtext(side= 3, cex=1.5, outer = TRUE, line=-1.5,
       "E coli Core Metabolism, optimal solution and ranges")
 }
-\references{\item \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis }
-\item Edwards,J.S., Covert, M., and Palsson, B.., " Metabolic Modeling of Microbes: the Flux Balance Approach", Environmental Microbiology, 4(3): pp. 133-140 (2002).
+\references{ \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis }
+
+Edwards,J.S., Covert, M., and Palsson, B.., " Metabolic Modeling of Microbes: the Flux Balance Approach", Environmental Microbiology, 4(3): pp. 133-140 (2002).
 
 }
 \keyword{datasets}
