@@ -52,8 +52,10 @@ This model can be solved by various techniques:
 }
 \usage{Minkdiet}
 \format{a list with matrix \code{Prey} and vector \code{Mink}. 
-\item (*) \code{Prey} contains the isotopic composition (13C and 15N) of the 7 possible food items of Mink
-\item (*) \code{Mink} contains the isotopic composition (13C and 15N) of Mink
+\itemize{
+\item \code{Prey} contains the isotopic composition (13C and 15N) of the 7 possible food items of Mink
+\item \code{Mink} contains the isotopic composition (13C and 15N) of Mink
+}
 \cr columnnames of \code{Prey} are the food items, rownames of \code{Prey} (names of Mink) are the names of the isotopic elements}
 \author{Karline Soetaert <k.soetaert@nioo.knaw.nl>}
 \examples{# visualisation of the data

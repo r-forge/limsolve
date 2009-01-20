@@ -23,7 +23,7 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
   \item{sdB }{vector with standard deviation on B, used for weighing; default = equal weights}
   \item{iter }{integer determining the number of iterations}
-  \item{outputlength} { number of iterations kept in the output; at most equal to \code{iter}}
+  \item{outputlength}{ number of iterations kept in the output; at most equal to \code{iter}}
   \item{burninlength}{a number of extra iterations, performed at first, to "warm up" the algorithm. }
   \item{type }{type of algorithm: one of: "mirror", (mirroring algorithm), "rda" (random directions algorithm) or "cda" (coordinates directions algorithm)}
   \item{jmp }{jump length of the transformed variables q: \eqn{x=x0+Zq} (only if \code{type}=="mirror"); if jmp is NULL, a reasonable value is determined by xsample,
