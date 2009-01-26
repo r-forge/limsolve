@@ -34,8 +34,8 @@ and 12 \bold{pigments}:
 
 The input data consist of: 
   \enumerate{
-\item 1. the pigment composition of the various algal groups, for instance determined from cultures (the Southern Ocean example -table 4- in Mackey et al., 1996) 
-\item 2. the pigment composition of a field sample.
+\item the pigment composition of the various algal groups, for instance determined from cultures (the Southern Ocean example -table 4- in Mackey et al., 1996)
+\item the pigment composition of a field sample.
 }
 Based on these data, the algal composition of the field sample is estimated, 
 under the assumption that the pigment composition of the field sample is a weighted avertage of the pigment
@@ -48,21 +48,22 @@ As there are more measurements (12 pigments) than unknowns (8 algae), the result
  \deqn{Ex=f}
  \deqn{Gx>=h}
 
-If there are 2 algae \code{A,B}, and 3 pigments \code{1,2,3} then the 3 approximate equalities (\eqn{A*x=B})would  be:
- \deqn{f[1,S] = p[A]*f[A,1]+p[B]*f[B,1]}
- \deqn{f[2,S] = p[A]*f[A,2]+p[B]*f[B,3]}
- \deqn{f[3,S] = p[A]*f[A,3]+p[B]*f[B,3]}
+If there are 2 algae \code{A,B}, and 3 pigments \code{1,2,3} then the 3
+approximate equalities (\eqn{A*x=B}) would be:
+ \deqn{f_{1,S} = p_{A}*f_{A,1}+p_{B}*f_{B,1}}
+ \deqn{f_{2,S} = p_{A}*f_{A,2}+p_{B}*f_{B,3}}
+ \deqn{f_{3,S} = p_{A}*f_{A,3}+p_{B}*f_{B,3}}
 
-where \eqn{p[A]} and \eqn{p[b]} are the (unknown) proportions of algae A and B in the field sample (S), and 
-\eqn{f[A,1]} is the relative amount of pigment 1 in alga A, etc...
+where \eqn{p_{A}} and \eqn{p_{b}} are the (unknown) proportions of algae A and B in the field sample (S), and
+\eqn{f_{A,1}} is the relative amount of pigment 1 in alga A, etc...
 
 The equality ensures that the sum of fractions equals 1:
- \deqn{1 = p[A]+p[b]}
+ \deqn{1 = p_{A}+p_{b}}
 
 
 and the inequalities ensure that fractions are positive numbers
-\deqn{p[A] > 0}
-\deqn{p[B] > 0}}
+\deqn{p_{A} > 0}
+\deqn{p_{B} > 0}}
 \usage{Chemtax}
 \format{A list with the input ratio matrix (\code{Ratio}) and a vector with the field data (\code{Field})
   \itemize{
