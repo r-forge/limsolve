@@ -1,8 +1,8 @@
 \name{xsample}
 \alias{xsample}
-\title{Randomly samples an under- or overdetermined problem with linear equality and inequality conditions}
+\title{Randomly samples an underdetermined problem with linear equality and inequality conditions}
 \description{Bayesian samping of linear problems with linear inequality conditions. 
- Uses either the "hit and run" (or directions algorithm) or a mirroring technique for sampling 
+ Uses either a "hit and run" algorithm (random or coordinate directions) or a mirroring technique for sampling 
  
  The monte carlo method produces a sample solution for 
  \deqn{Ex=f}
@@ -53,28 +53,6 @@ F <- c(Minkdiet$Mink,1)
 pairs(xsample(E=E,F=F,G=diag(7),H=rep(0,7),iter=5000,output=1000,type="cda")$X,
      main="Minkdiet 1000 solutions, - cda")
 
-# sample the overdetermined Chemtax problem
-Nx     <-nrow(Chemtax$Ratio)
-  
-# equations that have to be met exactly Ex=f: 
-# sum of all fraction must be equal to 1.
-E <- rep(1,Nx)
-F <- 1
-  
-# inequalities, Gx>=h:
-# all fractions must be positive numbers
-G <- diag(nrow=Nx)
-H <- rep(0,Nx)
-  
-# equations that must be reproduced as closely as possible, Ax ~ b
-# the field data; the input ratio matrix and field data are rescaled
-A     <- t(Chemtax$Ratio/rowSums(Chemtax$Ratio))
-B     <- Chemtax$Field/sum(Chemtax$Field)
-  
-# Sample
-xs <- xsample(A=A,B=B,E=E,F=F,G=G,H=H,iter=2000,outputlen=1000)$X
-pairs(xs, main="Chemtax 1000 solutions - 2000 iterations")
-
      }
 \details{The algorithm proceeds in two steps.
 \enumerate{
@@ -83,12 +61,12 @@ pairs(xs, main="Chemtax 1000 solutions - 2000 iterations")
 	\item  the probability distribution of \eqn{q} is sampled numerically using a random walk (based on the Metropolis algorithm).
 }
 
-  There are three algorithms for selecting new samples: \code{rda}, \code{cda} (two hit-and-run algorithms) and a novel \code{mirror} algoithm.
+  There are three algorithms for selecting new samples: \code{rda}, \code{cda} (two hit-and-run algorithms) and a novel \code{mirror} algorithm.
   \itemize{
 	\item In the \code{rda} algorithm first a random direction is selected, and the new sample obtained by uniformly sampling the line 
   connecting the old sample and the intersection with the planes defined by the inequality constraints.
   \item the \code{cda} algorithm is similar, except that the direction is chosen along one of the coordinate axes.  
-  \item the \code{mirror} algorithm is unpublished; it uses the inequality constraints as "reflecting planes" along which jumps are reflected.
+  \item the \code{mirror} algorithm is yet unpublished; it uses the inequality constraints as "reflecting planes" along which jumps are reflected.
  In contrast to \code{cda} and \code{rda}, this algorithm also works with unbounded problems (i.e. for which some of the unknowns can attain Inf).
 }
 For more information, see the package vignette \code{vignette(xsample)} or the file xsample.pdf in the packages \file{docs} subdirectory.
@@ -97,13 +75,19 @@ Raftery and Lewis (1996) suggest a minimum of 3000 iterations to reach the extre
 
 If provided, then \code{x0} should be a valid particular solution (i.e. \eqn{E*x0=b} and \eqn{G*x0>=h}), else the algorithm will fail.
 
-For larger problems, a central solution may be necessary as a starting point for the \code{rda} and \code{cda} algorithms.
-A good starting value is provided by the "central" value when running the function \code{\link{xranges}} with option \code{central} equal to TRUE.
+For larger problems, a central solution may be necessary as a starting
+point for the \code{rda} and \code{cda} algorithms.  A good starting
+value is provided by the "central" value when running the function
+\code{\link{xranges}} with option \code{central} equal to TRUE.
 
-If the particular solution (\code{x0}) is not provided, then the parsimonious solution is sought, see \code{\link{ldei}}.
-\cr For underdetermined systems, this may not be the most efficient way to start the algorithm. The parsimonious solution is usually
-  located near the edges, and the \code{rda} and \code{cda} algorithms may not get out of this corner.
- The \code{mirror} algorithm is insensitive to that. Here it may be even better to start in a corner (as this position will always never be reached by random sampling).
+If the particular solution (\code{x0}) is not provided, then the
+parsimonious solution is sought, see \code{\link{ldei}}.  \cr This may
+however not be the most efficient way to start the algorithm. The
+parsimonious solution is usually located near the edges, and the
+\code{rda} and \code{cda} algorithms may not get out of this corner.
+The \code{mirror} algorithm is insensitive to that. Here it may be even
+better to start in a corner (as this position will always never be
+reached by random sampling).
 
 The algorithm will fail if there are hidden equalities. For instance, two inequalities may together impose an equality on an unknown,
 or, inequalities may impose equalities on a linear combination of two or more unknowns.
