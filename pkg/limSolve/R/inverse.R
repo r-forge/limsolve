@@ -1089,7 +1089,7 @@ xsample <- function(A=NULL,             #Ax~=B
         if (is.null(A)) s2 <- rep(NA,k)
         else
           {
-            estVar <- solve(t(a)%*%diag(sdB^-2)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+            estVar <- solve(t(a)%*%diag(sdB^-2,length(sdB))%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
             estSd  <- sqrt(diag(estVar))
             s2 <- estSd/a.scale
           }
@@ -1116,8 +1116,8 @@ xsample <- function(A=NULL,             #Ax~=B
 
     ## conversions vectors to matrices and checks
     if (is.data.frame(A)) A <- as.matrix(A)
-    if (is.data.frame(A)) A <- as.matrix(A)
-    if (is.data.frame(A)) A <- as.matrix(A)
+    if (is.data.frame(E)) E <- as.matrix(E)
+    if (is.data.frame(G)) G <- as.matrix(G)
     if (is.vector(A)) A <- t(A)
     if (is.vector(E)) E <- t(E)
     if (is.vector(G)) G <- t(G)
