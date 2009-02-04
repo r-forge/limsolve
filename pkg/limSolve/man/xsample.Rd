@@ -1,10 +1,10 @@
 \name{xsample}
 \alias{xsample}
 \title{Randomly samples an underdetermined problem with linear equality and inequality conditions}
-\description{Bayesian samping of linear problems with linear inequality conditions. 
+\description{Random sampling of underdetermined linear problems with linear inequality conditions. 
  Uses either a "hit and run" algorithm (random or coordinate directions) or a mirroring technique for sampling 
  
- The monte carlo method produces a sample solution for 
+ The Markof Chain Monte Carlo method produces a sample solution for 
  \deqn{Ex=f}
  \deqn{Ax\simeq B}{Ax~=B}
  \deqn{Gx>=h}
@@ -21,7 +21,7 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   \item{F }{numeric vector containing the right-hand side of the (exact) equality constraints}
   \item{G }{numeric matrix containing the coefficients of the inequality constraints, \eqn{Gx>=H}}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
-  \item{sdB }{vector with standard deviation on B, used for weighing; default = equal weights}
+  \item{sdB }{vector with standard deviation on B, used for weighting; default = equal weights}
   \item{iter }{integer determining the number of iterations}
   \item{outputlength}{ number of iterations kept in the output; at most equal to \code{iter}}
   \item{burninlength}{a number of extra iterations, performed at first, to "warm up" the algorithm. }

@@ -19,7 +19,7 @@
 
 % \begin{frontmatter}
 
-\title{xsample: an R function for sampling over- and underdetermined linear inverse problems}
+\title{xsample: an R function for sampling underdetermined linear inverse problems}
 
 \author{Karel Van den Meersche}
 
@@ -28,8 +28,8 @@
 \section{Introduction}
 
 xsample is an R function that instead of optimizing a linear problem,
-returns a sample set that approaches the probability distribution of
-the solution. 
+returns a sample set that has a uniform or a truncated normal
+distribution bounded by a set of inequality constraints.
 
 A general linear problem can be written in matrix notation as:
 \footnote{notations: vectors and matrices are in \textbf{bold};
@@ -49,23 +49,31 @@ A general linear problem can be written in matrix notation as:
     \end{cases}
 \end{equation}
 
-A typical linear model consists of a set of equality constraints that have to be met 
-either exactly or approximately, and a number of inequality constraints. When there are as 
-many independent and consistent equations as there are unknowns, there is one set of parameters that meets all the 
-equations, and the model can be called evendetermined. In other cases, there are more equations 
-than unknowns; there is no exact solution and the model is overdetermined. An approximate 
-solution can then be calculated by minimizing some model cost, such as the sum of squared 
-residuals. Linear regressions are examples of such models. 
+A typical linear model consists of a set of equality constraints that
+have to be met either exactly or approximately, and a number of
+inequality constraints. When there are as many independent and
+consistent equations as there are unknowns, there is one set of
+parameters that meets all the equations, and the model can be called
+evendetermined. In other cases, there are more equations than
+unknowns; there is no exact solution and the model is
+overdetermined. An approximate solution can then be calculated by
+minimizing some model cost, such as the sum of squared
+residuals. Linear regressions are examples of such models.
 
-When there are too few equality constraints, the model is underdetermined, and there exist
-an infinite number of parameter sets that meet the constraints. In many research areas such as 
-engineering, economics, one is interested in only one optimal solution. Thus, one looks for 
-the simplest solution, or the solution that minimizes cost, or maximizes security, profit, efficiency or 
-other variables. This kind of problems are solved with linear programming and quadratic programming techniques. 
+When there are too few equality constraints, the model is
+underdetermined, and there exist an infinite number of parameter sets
+that meet the constraints. In many research areas such as engineering,
+economics, one is interested in only one optimal solution. Thus, one
+looks for the simplest solution, or the solution that minimizes cost,
+or maximizes security, profit, efficiency or other variables. This
+kind of problems are solved with linear programming and quadratic
+programming techniques.
 
-Instead of searching one optimal solution, xsample() samples the whole
-solution space, using a Markov Chain Monte Carlo (MCMC)
-algorithm.
+Instead of searching a single optimal solution for an underdetermined
+problem, xsample() samples the whole solution space, using a Markov
+Chain Monte Carlo (MCMC) algorithm. If A and B are NULL, the feasible
+space is sampled uniformly. When A, B and sdB are provided, the
+samples have a truncated normal distribution.
 
 
 \section{Method}
