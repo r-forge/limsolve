@@ -21,7 +21,7 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   \item{F }{numeric vector containing the right-hand side of the (exact) equality constraints}
   \item{G }{numeric matrix containing the coefficients of the inequality constraints, \eqn{Gx>=H}}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
-  \item{sdB }{vector with standard deviation on B, used for weighting; default = equal weights}
+  \item{sdB }{vector with standard deviation on B. Defaults to 1}
   \item{iter }{integer determining the number of iterations}
   \item{outputlength}{ number of iterations kept in the output; at most equal to \code{iter}}
   \item{burninlength}{a number of extra iterations, performed at first, to "warm up" the algorithm. }
