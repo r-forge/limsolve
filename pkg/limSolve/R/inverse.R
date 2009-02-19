@@ -1088,7 +1088,7 @@ xsample <- function(A=NULL,             #Ax~=B
           }
         if (is.null(A)) s2 <- rep(NA,k)
         else
-          if (qr(A)$rank<length(B)) s2 <- rep(NA,k)
+          if (qr(A)$rank<ncol(A)) s2 <- rep(NA,k)
           else
             {
               estVar <- solve(t(a)%*%diag(sdB^-2,length(sdB))%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
