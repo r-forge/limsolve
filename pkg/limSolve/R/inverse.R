@@ -1088,11 +1088,13 @@ xsample <- function(A=NULL,             #Ax~=B
           }
         if (is.null(A)) s2 <- rep(NA,k)
         else
-          {
-            estVar <- solve(t(a)%*%diag(sdB^-2,length(sdB))%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
-            estSd  <- sqrt(diag(estVar))
-            s2 <- estSd/a.scale
-          }
+          if (qr(A)$rank<length(B)) s2 <- rep(NA,k)
+          else
+            {
+              estVar <- solve(t(a)%*%diag(sdB^-2,length(sdB))%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+              estSd  <- sqrt(diag(estVar))
+              s2 <- estSd/a.scale
+            }
         s <- pmin(s1,s2,na.rm=T)
         s[s>tol^-2] <- NA
         if (any (is.na(s)))
