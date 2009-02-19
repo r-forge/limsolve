@@ -55,6 +55,10 @@ F <- 1
 G <- Blending$G
 H <- Blending$H
 
+# add positivity requirement
+G=rbind(G,diag(3))
+H=c(H,rep(0,3))
+
 # 1. Solve the model with linear programming
 res <- linp(E=t(E),F=F,G=G,H=H,Cost=Blending$Cost)
 
@@ -74,8 +78,7 @@ legend  ("topright",pch=c(16,NA),lty=c(NA,1),
 
 # 3. Random sample of the three ingredients
 # The inequality that all x > 0 has to be added!
-xs <- xsample(E=E,F=F,G=rbind(G,diag(3)),
-              H=c(H,rep(0,3)))$X
+xs <- xsample(E=E,F=F,G=G,H=H)$X
 
 pairs(xs,main="Blending, 3000 solutions with xsample")
 
