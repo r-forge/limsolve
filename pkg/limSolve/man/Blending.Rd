@@ -56,8 +56,8 @@ G <- Blending$G
 H <- Blending$H
 
 # add positivity requirement
-G=rbind(G,diag(3))
-H=c(H,rep(0,3))
+G <- rbind(G,diag(3))
+H <- c(H,rep(0,3))
 
 # 1. Solve the model with linear programming
 res <- linp(E=t(E),F=F,G=G,H=H,Cost=Blending$Cost)
