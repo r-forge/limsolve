@@ -466,18 +466,24 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
   Nin  <- nrow(G)
   if (is.null (Nx))   Nx  <- ncol(E)
   if (is.null (Nx))   Nx  <- ncol(G)
-  if (is.null (Neq))  Neq  <- 1
   if (is.null (Nin))  Nin  <- 1
-  ## If equalities/inequalities absent: "empty" constraints...
-  if (is.null(E)) E <- matrix(nrow=1,ncol=Nx,0)
-  if (is.null(F)) F <- 0
+  ## If equalities/inequalities absent: use type=2 instead
+  if (is.null (Neq))
+  {
+  Neq <- 0
+  if (verbose & type==1) warning("No equalities - setting type = 2")
+  type = 2
+  F <- NULL
+  } else  {
+  if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
+  if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
+  }
+
   if (is.null(G)) G <- matrix(nrow=1,ncol=Nx,0)
   if (is.null(H)) H <- 0
 
   if (ncol(G)   != Nx)   stop("cannot solve least squares problem - A and G not compatible")
-  if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
   if (length(B) != Napp) stop("cannot solve least squares problem - A and B not compatible")
-  if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
   if (length(H) != Nin)  stop("cannot solve least squares problem - G and H not compatible")
 
   if (! is.null(Wa))
@@ -540,7 +546,7 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
                      W=as.double(matrix(nrow=mdW,ncol=Nx+1,0.)),WS=as.double(rep(0.,mWS)),
                      lpr=as.integer(lpr),ProgOpt=as.double(ProgOpt),
                      verbose=as.logical(verbose),IsError=as.logical(IsError))
-
+      if (any(is.infinite(sol$nX))) sol$IsError<-TRUE
       if (fulloutput) 
         {covar<-matrix(nrow=mdW,ncol=Nx+1,data=sol$W)[1:Nx,1:Nx]
          RankEq <- sol$IP[1]
@@ -561,12 +567,6 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
 
         sol   <- solve.QP(Dmat ,dvec, Amat , bvec, meq=Neq)
         sol$IsError <- FALSE
-
-        if (sol$value>Tol) 
-          {
-            sol $IsError<- TRUE
-            print("problem incompatible")
-          }
         sol$X <- sol$solution
 
       } else  stop("cannot solve least squares problem - type unknown")
@@ -577,7 +577,13 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
   X[which(abs(X)<Tol)] <- 0         # zero very tiny values
 
   ## Residual of the inequalities
-  residual <- 0
+  if (any(is.infinite(X)))
+   {
+   residual <- Inf
+   solution <- Inf
+   }
+  else
+  {residual <- 0
   if (Nin > 0) 
     { 
       ineq     <- G %*% X - H
@@ -601,7 +607,7 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
     {
       solution <- sum ((A %*% X - B)^2)
     }
-
+  }
   xnames <- colnames(A)
   if (is.null(xnames)) xnames <- colnames(E)
   if (is.null(xnames)) xnames <- colnames(G)
