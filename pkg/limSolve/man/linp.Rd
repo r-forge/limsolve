@@ -51,7 +51,7 @@ linp(E=NULL, F=NULL, G=NULL, H=NULL, Cost,
     if \code{Cost} has a names attribute, and neither the columns of \code{E}
     nor \code{G} have a name, they will be used to label the output.
   }
-  \item{ispos} {logical, when \code{TRUE} then the unknowns (x) must be
+  \item{ispos}{logical, when \code{TRUE} then the unknowns (x) must be
     positive (this is consistent with the original definition of a
     linear programming problem).
   }
