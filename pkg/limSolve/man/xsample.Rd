@@ -10,7 +10,7 @@
  \deqn{Gx>=h}
  where \eqn{Ex=F} have to be met exactly, and \eqn{Ax\simeq B}{Ax~=B} approximately.}
 \usage{xsample(A=NULL, B=NULL, E=NULL, F=NULL, 
-G=NULL, H=NULL, sdB=1, iter=3000, outputlength=iter,burninlength=NULL,
+G=NULL, H=NULL, sdB=NULL, W=1, iter=3000, outputlength=iter,burninlength=NULL,
 type = "mirror", jmp = NULL, tol=sqrt(.Machine$double.eps),
 x0=NULL, fulloutput = FALSE, test=TRUE)}
 \arguments{
@@ -21,7 +21,11 @@ x0=NULL, fulloutput = FALSE, test=TRUE)}
   \item{F }{numeric vector containing the right-hand side of the (exact) equality constraints}
   \item{G }{numeric matrix containing the coefficients of the inequality constraints, \eqn{Gx>=H}}
   \item{H }{numeric vector containing the right-hand side of the inequality constraints}
-  \item{sdB }{vector with standard deviation on B. Defaults to 1}
+  \item{sdB }{vector with standard deviation on B. Defaults to NULL}
+  \item{W }{weighting for \eqn{Ax\simeq B}{Ax~=B}. Only used if \code{sdB=NULL} and the problem is
+    overdetermined. In that case, the error of B around the model Ax is
+    estimated based on the residuals of \eqn{Ax\simeq B}{Ax~=B}. This
+    error is made proportional to 1/W. }
   \item{iter }{integer determining the number of iterations}
   \item{outputlength}{ number of iterations kept in the output; at most equal to \code{iter}}
   \item{burninlength}{a number of extra iterations, performed at first, to "warm up" the algorithm. }
