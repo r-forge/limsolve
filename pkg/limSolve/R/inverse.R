@@ -469,15 +469,15 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
   if (is.null (Nin))  Nin  <- 1
   ## If equalities/inequalities absent: use type=2 instead
   if (is.null (Neq))
-  {
-  Neq <- 0
-  if (verbose & type==1) warning("No equalities - setting type = 2")
-  type = 2
-  F <- NULL
-  } else  {
-  if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
-  if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
-  }
+    {
+      Neq <- 0
+      if (verbose & type==1) warning("No equalities - setting type = 2")
+      type = 2
+      F <- NULL
+    } else  {
+      if (ncol(E)   != Nx)   stop("cannot solve least squares problem - A and E not compatible")
+      if (length(F) != Neq)  stop("cannot solve least squares problem - E and F not compatible")
+    }
 
   if (is.null(G)) G <- matrix(nrow=1,ncol=Nx,0)
   if (is.null(H)) H <- 0
@@ -578,36 +578,36 @@ lsei <- function(A=NULL,                     # numeric matrix containing the coe
 
   ## Residual of the inequalities
   if (any(is.infinite(X)))
-   {
-   residual <- Inf
-   solution <- Inf
-   }
+    {
+      residual <- Inf
+      solution <- Inf
+    }
   else
-  {residual <- 0
-  if (Nin > 0) 
-    { 
-      ineq     <- G %*% X - H
-      residual  <- residual -sum(ineq[ineq<0])
-    }
+    {residual <- 0
+     if (Nin > 0) 
+       { 
+         ineq     <- G %*% X - H
+         residual  <- residual -sum(ineq[ineq<0])
+       }
 
-  ## Total residual norm
-  if (Neq> 0) 
-    {
-      residual <- residual + sum(abs(E %*% X - F))  
-    }
-  if (residual>Tol) 
-    {
-      sol$IsError<- TRUE
-    }
+     ## Total residual norm
+     if (Neq> 0) 
+       {
+         residual <- residual + sum(abs(E %*% X - F))  
+       }
+     if (residual>Tol) 
+       {
+         sol$IsError<- TRUE
+       }
 
-  ## The solution norm
-  
-  solution <- 0
-  if (Napp > 0)
-    {
-      solution <- sum ((A %*% X - B)^2)
-    }
-  }
+     ## The solution norm
+     
+     solution <- 0
+     if (Napp > 0)
+       {
+         solution <- sum ((A %*% X - B)^2)
+       }
+   }
   xnames <- colnames(A)
   if (is.null(xnames)) xnames <- colnames(E)
   if (is.null(xnames)) xnames <- colnames(G)
@@ -717,11 +717,11 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
       lmin <- lp("min", obj, con, dir, rhs)
       if(lmin$status == 0) Range[i, 1] <- lmin$objval else
       if(lmin$status == 3) Range[i, 1] <- -1e30 else
-                           Range[i, 1] <- NA
+      Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
       if(lmax$status == 0) Range[i, 2] <- lmax$objval else
       if(lmax$status == 3) Range[i, 2] <- 1e30 else
-                           Range[i, 2] <- NA
+      Range[i, 2] <- NA
       if (central)
         {
           if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
@@ -752,11 +752,11 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
       lmin <- lp("min", obj, con, dir, rhs)
       if(lmin$status == 0) Range[i, 1] <- lmin$objval else
       if(lmin$status == 3) Range[i, 1] <- -1e30 else
-                           Range[i, 1] <- NA
+      Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
       if(lmax$status == 0) Range[i, 2] <- lmax$objval else
       if(lmax$status == 3) Range[i, 2] <- 1e30 else
-                           Range[i, 2] <- NA
+      Range[i, 2] <- NA
       if (central)
         {
           if (! any (is.na(lmin$solution)) && lmin$status==0) {Summed<- Summed + lmin$solution;nsum<-nsum+1}
@@ -847,11 +847,11 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
         lmin       <- lp("min",obj,con,dir,rhs)
         if (lmin$status == 0) Range[i,1] <- lmin$objval else
         if (lmin$status == 3) Range[i,1] <- -1e30       else
-                              Range[i,1] <- NA
+        Range[i,1] <- NA
         lmax       <- lp("max",obj,con,dir,rhs)
         if (lmax$status == 0) Range[i,2] <- lmax$objval else
         if (lmax$status == 3) Range[i,2] <- 1e30        else
-                              Range[i,2]  <- NA
+        Range[i,2]  <- NA
       }
   } else{
     ## First test if problem is solvable...
@@ -870,11 +870,11 @@ varranges <- function(E=NULL, # numeric matrix containing the coefficients of th
       lmin <- lp("min", obj, con, dir, rhs)
       if(lmin$status == 0) Range[i, 1] <- lmin$objval else
       if(lmin$status == 3) Range[i, 1] <- -1e30 else
-                           Range[i, 1] <- NA
+      Range[i, 1] <- NA
       lmax <- lp("max", obj, con, dir, rhs)
       if(lmax$status == 0) Range[i, 2] <- lmax$objval else
       if(lmax$status == 3) Range[i, 2] <- 1e30 else
-                           Range[i, 2] <- NA
+      Range[i, 2] <- NA
     }
   }
 
@@ -993,11 +993,12 @@ Solve.banded <- function(abd,   # (nonzero) bands, rotated row-wise or full squa
 
 xsample <- function(A=NULL,             #Ax~=B
                     B=NULL,
-                    E=NULL,              #Ex=F
+                    E=NULL,             #Ex=F
                     F=NULL,    
                     G=NULL,             #Gx>H; 
                     H=NULL,             #Gx>H; 
-                    sdB=1,              #standard deviations on B (weighting)
+                    sdB=NULL,           #standard deviations on B
+                    W=1,                #weighting for B; only used if sdB=NULL and the error in the model diag(W)Ax=diag(W)B has to be estimated. W~1/sdB.
                     iter=3000,          #number of iterations
                     outputlength = iter, # number of rows of output matrix
                     burninlength = NULL,
@@ -1084,7 +1085,7 @@ xsample <- function(A=NULL,             #Ax~=B
 
     norm <- function(x) sqrt(x%*%x)
 
-    automatedjump <- function(a,b,g,h,g.scale=5,a.scale=5)
+    automatedjump <- function(a,b,g,h,g.scale=5,a.scale=1)
       {
         if (is.null(g)) s1 <- rep(NA,k)
         else
@@ -1097,7 +1098,7 @@ xsample <- function(A=NULL,             #Ax~=B
           if (qr(A)$rank<ncol(A)) s2 <- rep(NA,k)
           else
             {
-              estVar <- solve(t(a)%*%diag(sdB^-2,length(sdB))%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+              estVar <- SS0/(lb-lx)*solve(t(a)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
               estSd  <- sqrt(diag(estVar))
               s2 <- estSd/a.scale
             }
@@ -1105,15 +1106,15 @@ xsample <- function(A=NULL,             #Ax~=B
         s[s>tol^-2] <- NA
         if (any (is.na(s)))
           {
-           if (all(is.na(s)))
-             {
-               warning(" problem is unbounded - all jump lengths are set to 1")
-               s[] <- 1
-             } else {
-               warning(" problem is unbounded - some jump lengths are set arbitrarily")
-               s[is.na(s)] <- mean(s,na.rm=T)*100
-             }
-         }
+            if (all(is.na(s)))
+              {
+                warning(" problem is unbounded - all jump lengths are set to 1")
+                s[] <- 1
+              } else {
+                warning(" problem is unbounded - some jump lengths are set arbitrarily")
+                s[is.na(s)] <- mean(s,na.rm=T)*100
+              }
+          }
         return(s)
       }
 
@@ -1129,19 +1130,44 @@ xsample <- function(A=NULL,             #Ax~=B
     if (is.vector(A)) A <- t(A)
     if (is.vector(E)) E <- t(E)
     if (is.vector(G)) G <- t(G)
+
+    if(!is.null(A))
+      {
+        ## system overdetermined?
+        M <- rbind(cbind(A,B),cbind(E,F))
+        overdetermined <- !qr(M)$rank<=ncol(A)
+
+        lb <- length(B)
+        if (overdetermined&is.null(sdB))
+          {
+            warning("The given linear problem is overdetermined. A standard deviation for the data vector B is incorporated in the MCMC as a model parameter.")
+            estimate_sdB=TRUE
+            A <- A*W
+            B <- B*W 
+          } else {
+            estimate_sdB=FALSE
+            if (overdetermined) warning("The given linear problem is overdetermined. Giving fixed standard deviations for the data vector B can lead to dubious results. Maybe you want to set sdB=NULL and estimate the data error.")
+            if (!length(sdB)%in%c(1,lb)) stop("sdB does not have the correct length")
+            A <- A/sdB
+            B <- B/sdB           # set sd = 1 in Ax = N(B,sd)
+
+          }
+      } else {
+        estimate_sdB=FALSE
+      }
     
     ## find a particular solution x0
     if (is.null(x0))
       {
-        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H)#,Wa=1/sdB)
+        l <- lsei(A=A,B=B,E=E,F=F,G=G,H=H)
         if (l$residualNorm>1e-6)
           stop("no particular solution found;incompatible constraints")
         else
           x0 <- l$X
       }
-    n <- length(x0)   
+    lx <- length(x0)   
     
-    ## KS: test for equalities, hidden in inequalities...
+    ## additional checks for equalities, hidden in inequalities... (Karline S.)
     if (test && !is.null(G))
       {
         xv <- varranges(E,F,G,H,EqA=G)
@@ -1163,7 +1189,8 @@ xsample <- function(A=NULL,             #Ax~=B
             F  <- c(F,xr[ii,1])
           }
       }
-
+    
+    
     ## Z is an orthogonal matrix for which E%*%Z=0; it can serve as basis for the null space of E.
     ## all solutions for the equalities have the form x = x0 + Zq with q a random vector. 
     ## the vector q is varied in a random walk, using a MCMC with acceptance rate = 1. The inequality constraints Gx>H
@@ -1172,7 +1199,7 @@ xsample <- function(A=NULL,             #Ax~=B
     if (!is.null(E))
       {
         Z <- Null(t(E)); Z[abs(Z)<tol] <- 0  #x=x0+Zq ; EZ=0
-      } else { Z <- diag(n) }
+      } else { Z <- diag(lx) }
     if(length(Z)==0)
       {
         warning("the problem has a single solution; this solution is returned as function value")
@@ -1198,9 +1225,29 @@ xsample <- function(A=NULL,             #Ax~=B
         a <- a%*%v                             #transformation a <- av
         if (!is.null(G)) g <- g%*%v            #transformation g <- gv
         Z <- Z%*%v                             #transformation Z <- Zv
-        sdB <- rep(sdB,length=length(b))
-        prob <- function(q) prod(dnorm(b,a%*%q,sdB))
-        test <- function(q2) (prob(q2)/prob(q1))>runif(1) #metropolis criterion
+
+        ## if overdetermined, calculate posterior distribution of S in Ax=N(B,S)
+        ## Marko Laine 2008, thesis on adaptive mcmc
+        ## S = 1/sd^2 of model
+        ## prior n0=lb
+        ## prior SSR0=n0*s0^2=sum((Ax0-B)^2)=sum(b^2)
+        ## if underdetermined: S=1 
+        ## if overdetermined: S is sampled from a 
+        ## posterior gamma distribution (Laine 2008) and
+        ## standard deviations of data are S^-.5
+        if (estimate_sdB) 
+          {
+            q0 <- lsei(a,b)$X
+            SS0 <- sum((a%*%q0-b)^2)  
+          } else {
+            S <- 1
+          }
+        SSR <- function(q) sum((a%*%q-b)^2)            # sum of squared residuals
+        ##        prob <- function(q) prod(dnorm(b,a%*%q,S^-.5))
+        prob <- function(q) exp(-.5*S*SSR(q))
+        ## test <- function(q2) (prob(q2)/prob(q1))>runif(1) #metropolis criterion
+        test <- function(q2) exp(-.5*S*(SSR(q2)-SSR(q1))) > runif(1)
+        
       } else {
                                         # transforming g and h
                                         #        if (!is.null(G))
@@ -1229,13 +1276,15 @@ xsample <- function(A=NULL,             #Ax~=B
                                         #          }
         prob <- function(q) 1
         test <- function(q2) TRUE
+        S <- 1
+        overdetermined <- FALSE
       }
 
     outputlength <- min (outputlength,iter)
     ou <- ceiling(iter/outputlength)
 
     q1 <- rep(0,k)
-    x <- matrix(ncol=n,nrow=outputlength,dimnames=list(NULL,colnames(A)))
+    x <- matrix(ncol=lx,nrow=outputlength,dimnames=list(NULL,colnames(A)))
     x[1,] <- x0
     naccepted <- 1
     p <- vector(length=outputlength) # probability distribution
@@ -1265,6 +1314,8 @@ xsample <- function(A=NULL,             #Ax~=B
       {
         for (ii in 1:ou)
           {
+            if (estimate_sdB) ## sd is estimated using Laine 2008
+              S <- rgamma(1,shape=lb,rate=0.5*(SS0+SSR(q1)))
             q2 <- newq(q1,g,h,k,jmp)
             if (test(q2)) { q1 <- q2
                             naccepted <- naccepted+1 }
@@ -1287,7 +1338,6 @@ xsample <- function(A=NULL,             #Ax~=B
 
     return(xsample)
   }
-
 
 
 ################################################################################
