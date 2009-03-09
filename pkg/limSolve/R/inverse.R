@@ -1093,15 +1093,18 @@ xsample <- function(A=NULL,             #Ax~=B
             q_ranges <- xranges(E=NULL,F=NULL,g,h)
             s1 <- abs(q_ranges[,1]-q_ranges[,2])/g.scale
           }
-        if (is.null(A)) s2 <- rep(NA,k)
-        else
-          if (qr(A)$rank<ncol(A)) s2 <- rep(NA,k)
-          else
-            {
-              estVar <- SS0/(lb-lx)*solve(t(a)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
-              estSd  <- sqrt(diag(estVar))
-              s2 <- estSd/a.scale
-            }
+        s2 <- rep(NA,k)
+        if (!is.null(A)) 
+          {
+            if (estimate_sdB)
+              {
+                estVar <- SS0/(lb-lx)*solve(t(a)%*%a) # estimated variance on the parameters, simplified from Brun et al 2001
+                estSd  <- sqrt(diag(estVar))
+                s2 <- estSd/a.scale
+              }
+            if (qr(A)$rank==lx&lx==lb)
+              s2 <- sdB*.2
+          }
         s <- pmin(s1,s2,na.rm=T)
         s[s>tol^-2] <- NA
         if (any (is.na(s)))
@@ -1133,11 +1136,12 @@ xsample <- function(A=NULL,             #Ax~=B
 
     if(!is.null(A))
       {
+        lb <- length(B)
+        lx <- ncol(A)
         ## system overdetermined?
         M <- rbind(cbind(A,B),cbind(E,F))
-        overdetermined <- !qr(M)$rank<=ncol(A)
+        overdetermined <- !qr(M)$rank<=lx
 
-        lb <- length(B)
         if (overdetermined&is.null(sdB))
           {
             warning("The given linear problem is overdetermined. A standard deviation for the data vector B is incorporated in the MCMC as a model parameter.")
