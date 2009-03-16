@@ -305,7 +305,8 @@ xsample <- function(A=NULL, B=NULL, E=NULL, F=NULL, G=NULL, H=NULL,
   colnames (x) <- xnames
 
   xsample <- list(X=x,acceptedratio=naccepted/iter,p=p,jmp=jmp)
-  if (fulloutput) xsample <- list(X=x,acceptedratio=naccepted/iter,Q=q,p=p,jmp=jmp)
+  if (fulloutput) xsample <- list(X=x,acceptedratio=naccepted/iter,
+    Q=q,p=p,jmp=jmp)
 
   return(xsample)
 }
