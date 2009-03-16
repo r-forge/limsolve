@@ -12,7 +12,7 @@
 }
 
 \usage{
-Solve.tridiag ( diam1, dia, diap1, rhs=rep(0,times=length(dia)))
+Solve.tridiag ( diam1, dia, diap1, B=rep(0,times=length(dia)))
 }
 
 \arguments{
@@ -22,18 +22,20 @@ Solve.tridiag ( diam1, dia, diap1, rhs=rep(0,times=length(dia)))
   }
   \item{diap1 }{a vector with (nonzero) elements above the diagonal.
   }
-  \item{rhs }{numeric vector containing right hand side.
+  \item{B }{Right-hand side of the equations, a vector with length = number
+   of rows of A, or a matrix with number of rows = number of rows of A.
   }
 }
 \value{
-  vector with the solution, x, of the tridiagonal system of equations Ax=B
+  matrix with the solution, X, of the tridiagonal system of equations Ax=B,
+  the number of columns of this matrix = number of columns of B.
 }
 \author{
   Karline Soetaert <k.soetaert@nioo.knaw.nl>
 }
 
 \examples{# create tridagonal system: bands on diagonal, above and below
-nn   <- 50                          # nr rows and columns of A
+nn   <- 20                          # nr rows and columns of A
 aa   <- runif(nn)
 bb   <- runif(nn)
 cc   <- runif(nn)
@@ -48,7 +50,12 @@ B<-runif(nn)
 solve(A,B)                           
 
 # same,  now using tridiagonal algorithm
-Solve.tridiag(aa[-1],bb,cc[-nn],B)
+as.vector(Solve.tridiag(aa[-1],bb,cc[-nn],B))
+
+# same, now with 3 different right hand sides
+B3 <- cbind(B, B*2, B*3)
+Solve.tridiag(aa[-1],bb,cc[-nn],B3)
+
 }
 
 \details{
@@ -58,6 +65,9 @@ Solve.tridiag(aa[-1],bb,cc[-nn],B)
 
 \seealso{
   \code{\link{Solve.banded}}, the function to solve a banded system of
+  linear equations.
+
+  \code{\link{Solve.block}}, the function to solve a block diagonal system of
   linear equations.
 
   \code{\link{Solve}} the generalised inverse solution,
