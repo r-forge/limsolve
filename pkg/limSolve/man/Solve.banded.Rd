@@ -12,11 +12,11 @@
   The matrix A is either inputted as a full square matrix or as the non-zero
   bands.
 
-  uses subroutines dgbfa and dgbsl (FORTRAN) from the Linpack routines
+  uses lapack subroutine dgbsv (FORTRAN)
 }
 
 \usage{
-Solve.banded(abd, nup, nlow, rhs = rep(0,times=ncol(abd)),
+Solve.banded(abd, nup, nlow, B = rep(0,times=ncol(abd)),
   full= (nrow(abd)==ncol(abd)))}
 
 \arguments{
@@ -29,7 +29,8 @@ Solve.banded(abd, nup, nlow, rhs = rep(0,times=ncol(abd)),
   \item{nlow }{number of nonzero bands below the diagonal; ignored if full
     matrix is inputted.
   }
-  \item{rhs }{numeric vector containing right hand side.
+  \item{B }{Right-hand side of the equations, a vector with length = number
+   of rows of A, or a matrix with number of rows = number of rows of A.
   }
   \item{full }{if \code{TRUE}: full matrix is inputted,
     if \code{FALSE}: banded matrix is input.
@@ -37,7 +38,8 @@ Solve.banded(abd, nup, nlow, rhs = rep(0,times=ncol(abd)),
 }
 
 \value{
-  vector with the solution, x, of the banded system of equations Ax=B.
+  matrix with the solution, X, of the banded system of equations Ax=B,
+  the number of columns of this matrix = number of columns of B.
 }
 
 \author{
@@ -68,7 +70,12 @@ abd
 # solve problem with banded version
 Band2 <- Solve.banded(abd,nup,ndwn,B)
 # compare 3 methods of solution
-rbind(Full,Band1,Band2)
+cbind(Full,Band1,Band2)
+
+# same, now with 3 different right hand sides
+B3 <- cbind(B, B*2, B*3)
+Solve.banded(abd,nup,ndwn,B3)
+
 }
 
 \references{
