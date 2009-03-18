@@ -2,20 +2,22 @@
 \alias{xsample}
 \title{
   Randomly samples an underdetermined problem with linear equality and
-  inequality conditions
+  inequality constraints
 }
 \description{
-  Random sampling of underdetermined linear problems with linear
-  inequality conditions.
+  Random sampling of inverse linear problems with linear equality and
+  inequality constraints.
   Uses either a "hit and run" algorithm (random or coordinate directions)
   or a mirroring technique for sampling.
  
- The Markof Chain Monte Carlo method produces a sample solution for 
+ The Markov Chain Monte Carlo method produces a sample solution for
  \deqn{Ex=f}
  \deqn{Ax\simeq B}{Ax~=B}
  \deqn{Gx>=h}
- where \eqn{Ex=F} have to be met exactly, and
- \eqn{Ax\simeq B}{Ax~=B} approximately.
+ where \eqn{Ex=F} have to be met exactly, and x is distributed
+ according to \eqn{ p(\mathbf{x})\propto
+  e^{-\frac{1}{2}(\mathbf{Ax-b})^T\mathbf{W}^2(\mathbf{Ax-b})}
+  }{p(x)~e^(-.5||W(Ax-B)||^2)}
 }
 
 \usage{
@@ -122,7 +124,7 @@ pairs(xsample(E=E,F=F,G=diag(7),H=rep(0,7),iter=5000,
       system \eqn{Ex=f}, \eqn{Gx>=h} is rewritten as \eqn{G(p+Zq)>= h},
       i.e. containing only inequality constraints and where Z is a basis for
       the null space of E.
-  	\item  the probability distribution of \eqn{q} is sampled numerically
+  	\item  the distribution of \eqn{q} is sampled numerically
       using a random walk (based on the Metropolis algorithm).
   }
 
