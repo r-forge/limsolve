@@ -53,7 +53,7 @@ xsample(A=NULL, B=NULL, E=NULL, F=NULL,
     \code{sdB=NULL} and the problem is
     overdetermined. In that case, the error of B around the model Ax is
     estimated based on the residuals of \eqn{Ax\simeq B}{Ax~=B}. This
-    error is made proportional to 1/W.
+    error is made proportional to 1/W. If sdB is not NULL, W=diag(sdB^-1).
   }
   \item{iter }{integer determining the number of iterations.
   }
