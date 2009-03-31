@@ -26,8 +26,8 @@
   \tabular{ll}{
     Package: \tab limSolve\cr
     Type: \tab Package\cr
-    Version: \tab 1.1-1\cr
-    Date: \tab 2008-07-17\cr
+    Version: \tab 1.4\cr
+    Date: \tab 2004-03-31\cr
     License: \tab GNU Public License 2 or above\cr
   }
 

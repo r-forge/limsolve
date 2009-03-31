@@ -27,13 +27,14 @@
   Z->D, Z->SED, D->Z, D->DOC, D->SED, B->N, B->SED, DOC->B
 
   The lsei model contains:
-  \item 14 equalities (Ax=B): the 7 mass balances (one for each compartment)
-    and 7 measurement equations
-  \item 26 unknowns (x), the flow values
-  \item 45 inequalities (Gx>h). The first 19 inequalities impose bounds
-    on some combinations of flows.
-    The last 26 inequalities impose that the flows have to be positive.
-
+  \itemize{
+    \item 14 equalities (Ax=B): the 7 mass balances (one for each compartment)
+      and 7 measurement equations
+    \item 26 unknowns (x), the flow values
+    \item 45 inequalities (Gx>h). The first 19 inequalities impose bounds
+      on some combinations of flows.
+      The last 26 inequalities impose that the flows have to be positive.
+  }
   As there are more unknowns (26) than equations (14), there exist an
   infinite amount of solutions (it is an underdetermined problem).
 }
