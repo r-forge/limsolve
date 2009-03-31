@@ -580,15 +580,15 @@ LP$solutionNorm
   the default \R method \code{solve}, followed by the banded matrix solver
   \code{Solve.band}, and the tridiagonal solver \code{Solve.tridiag}.
   
-  To make the problem matehamtically demanding, the A matrix contains 5000
-  rows and 5000 columns, and the problem is solved for 10 different vectors B.
+  The A matrix contains 500 rows and 500 columns, and the problem is
+  solved for 10 different vectors B.
   
   We start by defining the non-zero bands on (\code{bb}), below (\code{aa})
   and above (\code{cc}) the diagonal, required for input to the tridiagonal
   solver; we prepare the full matrix \code{A} necessary for the default solver
   and the banded matrix \code{abd}, required for the banded solver.
 <<>>=
-nn   <- 5000
+nn   <- 500
 @
 
   Input for the tridiagonal system:
@@ -626,7 +626,7 @@ B <- cbind(B,2*B,3*B,4*B,5*B,6*B,7*B,8*B,9*B,10*B)
   \emph{milliseconds}. \code{print(system.time()*1000)} does this.
   \footnote{Note that the banded and tridiagonal solver are so efficient
   (on my computer) that these systems are solved quasi-instantaneously
-  and the time returned = 0.}
+  even for 5000*5000 problems and the time returned = 0.}
 
 <<>>=
 print(system.time(Full <- solve(A,B))*1000)
