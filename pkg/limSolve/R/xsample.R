@@ -234,6 +234,7 @@ xsample <- function(A=NULL, B=NULL, E=NULL, F=NULL, G=NULL, H=NULL,
     if (estimate_sdB)    {
       q0 <- lsei(a,b)$X
       SS0 <- sum((a%*%q0-b)^2)
+      S <- lb/SS0
     } else {
       S <- 1
     }
