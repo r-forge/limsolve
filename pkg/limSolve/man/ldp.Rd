@@ -13,7 +13,7 @@
 }
 
 \usage{
-ldp(G, H, tol=sqrt(.Machine$double.eps), verbose=TRUE)
+ldp(G, H, tol = sqrt(.Machine$double.eps), verbose = TRUE)
 }
 
 \arguments{
@@ -50,11 +50,12 @@ ldp(G, H, tol=sqrt(.Machine$double.eps), verbose=TRUE)
   Karline Soetaert <k.soetaert@nioo.knaw.nl>
 }
 
-\examples{# parsimonious (simplest) solution
-G <- matrix(nr=2,nc=2,data=c(3,2,2,4))
-H <- c(3,2)
+\examples{
+# parsimonious (simplest) solution
+G <- matrix(nrow = 2, ncol = 2, data = c(3, 2, 2, 4))
+H <- c(3, 2)
 
-ldp(G,H)
+ldp(G, H)
 }
 
 \references{
