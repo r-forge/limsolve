@@ -87,7 +87,7 @@ pairs(xs, pch = ".", cex = 2, gap = 0, upper.panel = NULL,
       yaxt = "n", xaxt = "n")
 
 # Print results:
-data.frame(pars = pars, xr[ ,1:2], Mean = colMeans(xs), sd = sd(xs))
+data.frame(pars = pars, xr[ ,1:2], Mean = colMeans(xs), sd = apply(xs, 2, sd))
 }
 \references{
   Donali, E., Olli, K., Heiskanen, A.S., Andersen, T., 1999. Carbon flow
