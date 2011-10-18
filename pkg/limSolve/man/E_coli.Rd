@@ -108,7 +108,7 @@ pairs(xs[ ,10:20], pch = ".", cex = 2, main = "sampling, using mirror")
 
 # Print results:
 data.frame(pars = pars, Optimal = Optimal, xr[ ,1:2],
-           Mean = colMeans(xs), sd = sd(xs))
+           Mean = colMeans(xs), sd = apply(xs, 2, sd))
 
 # Plot results
 par(mfrow = c(1, 2))
