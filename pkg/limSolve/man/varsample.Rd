@@ -33,7 +33,7 @@ varsample (X, EqA, EqB=NULL)
   a matrix whose rows contain the sampled values of the variables.
 }
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 \examples{
 # The probability distribution of vertebrate and invertebrate

@@ -49,7 +49,7 @@ varranges(E=NULL, F=NULL, G=NULL, H=NULL, EqA, EqB=NULL,
   (variable)
 }
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 \examples{
 # Ranges in the contribution of food 3+4+5 in the diet of Mink (try ?Minkdiet)

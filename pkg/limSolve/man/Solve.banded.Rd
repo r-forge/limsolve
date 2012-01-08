@@ -44,7 +44,7 @@ Solve.banded(abd, nup, nlow, B = rep(0, times = ncol(abd)),
 }
 
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 \note{A similar function but that requires a totally different input can now 
   also be found in the \code{Matrix} package

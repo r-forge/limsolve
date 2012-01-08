@@ -49,7 +49,7 @@ xranges(E = NULL, F = NULL, G = NULL, H = NULL,
   if \code{full} is TRUE: next columns contain all valid range solutions
 }
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \examples{

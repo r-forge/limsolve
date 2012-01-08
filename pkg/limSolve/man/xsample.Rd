@@ -106,7 +106,7 @@ xsample(A = NULL, B = NULL, E = NULL, F =NULL,
 \author{
   Karel Van den Meersche<k.vdMeersche@nioo.knaw.nl>
 
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \examples{

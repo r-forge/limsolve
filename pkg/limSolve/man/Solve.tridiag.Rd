@@ -31,7 +31,7 @@ Solve.tridiag ( diam1, dia, diap1, B=rep(0,times=length(dia)))
   The number of columns of this matrix equals the number of columns of B.
 }
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \examples{# create tridagonal system: bands on diagonal, above and below

@@ -34,7 +34,7 @@ Solve (A, B = diag(nrow = nrow(A)), tol = sqrt(.Machine$double.eps))
   a vector with the generalised inverse solution.
 }
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \examples{

@@ -84,7 +84,7 @@ linp(E = NULL, F = NULL, G = NULL, H = NULL, Cost,
 }
 
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 \examples{
 #-------------------------------------------------------------------------------

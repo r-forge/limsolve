@@ -54,7 +54,7 @@ Solve.block(Top, AR, Bot, B, overlap)
 }
 
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \note{A similar function but that requires a totally different input can now 
