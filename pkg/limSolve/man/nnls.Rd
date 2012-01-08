@@ -50,7 +50,7 @@ nnls(A, B, tol = sqrt(.Machine$double.eps), verbose = TRUE)
 }
 
 \author{
-  Karline Soetaert <k.soetaert@nioo.knaw.nl>
+  Karline Soetaert <karline.soetaert@nioz.nl>
 }
 
 \examples{
