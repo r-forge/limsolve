@@ -6,7 +6,7 @@
 
 \description{
   Solves a linear programming problem,
-  \deqn{\min(\sum {Cost_i.x_i})} subject to
+  \deqn{\min(\sum {Cost_i.x_i})}{min(sum(Cost_i x_i))} subject to
   \deqn{Ex=f}
   \deqn{Gx>=h}
   \deqn{x_i>=0} (optional)
