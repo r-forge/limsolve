@@ -1,3 +1,7 @@
+C Karline: removed the write statement; where they also passed an integer value, 
+C this no long is the case. Each removed statement is preceded by:
+C KARLINE: REMOVED WRITE		 
+
 
 C*********************************************************************
 C LEAST DISTANCE SUBROUTINE
@@ -1998,25 +2002,29 @@ c     Check that enough storage was allocated in WS(*) and IP(*).
 c
       MODE = 4
       IF (MIN(N,ME,MA,MG) .LT. 0) THEN
-         WRITE (XERN1, '(I8)') N
-         WRITE (XERN2, '(I8)') ME
-         WRITE (XERN3, '(I8)') MA
-         WRITE (XERN4, '(I8)') MG
-         CALL xXERMSG ('SLATEC', 'LSEI', 'ALL OF THE VARIABLES N, ME,'//            &
-     &      ' MA, MG MUST BE .GE. 0 ENTERED ROUTINE WITH' //                        &
-     &      ' N  = ' // XERN1 //                                                    &
-     &      ' ME = ' // XERN2 //                                                    &
-     &      ' MA = ' // XERN3 //                                                    &
-     &      ' MG = ' // XERN4, 2, 1)
+c         WRITE (XERN1, '(I8)') N
+c         WRITE (XERN2, '(I8)') ME
+c         WRITE (XERN3, '(I8)') MA
+c         WRITE (XERN4, '(I8)') MG
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('LSEI: THE VARIABLES N, ME,MA, MG MUST BE>0')
+c         CALL xXERMSG ('SLATEC', 'LSEI', 'ALL OF THE VARIABLES N, ME,'//            &
+c     &      ' MA, MG MUST BE .GE. 0 ENTERED ROUTINE WITH' //                        &
+c     &      ' N  = ' // XERN1 //                                                    &
+c     &      ' ME = ' // XERN2 //                                                    &
+c     &      ' MA = ' // XERN3 //                                                    &
+c     &      ' MG = ' // XERN4, 2, 1)
          RETURN
       ENDIF
 c
       IF (IP(1).GT.0) THEN
          LCHK = 2*(ME+N) + MAX(MA+MG,N) + (MG+2)*(N+7)
          IF (IP(1).LT.LCHK) THEN
-            WRITE (XERN1, '(I8)') LCHK
-            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
-     &         'ALLOCATED FOR WS(*), NEED LW = ' // XERN1, 2, 1)
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('LSEI: insufficient storage')
+c            WRITE (XERN1, '(I8)') LCHK
+c            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
+c     &         'ALLOCATED FOR WS(*), NEED LW = ' // XERN1, 2, 1)
             RETURN
          ENDIF
       ENDIF
@@ -2024,9 +2032,11 @@ c
       IF (IP(2).GT.0) THEN
          LCHK = MG + 2*N + 2
          IF (IP(2).LT.LCHK) THEN
-            WRITE (XERN1, '(I8)') LCHK
-            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
-     &         'ALLOCATED FOR IP(*), NEED LIP = ' // XERN1, 2, 1)
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('LSEI: insufficient storage')
+c            WRITE (XERN1, '(I8)') LCHK
+c            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
+c     &         'ALLOCATED FOR IP(*), NEED LIP = ' // XERN1, 2, 1)
             RETURN
          ENDIF
       ENDIF
@@ -4072,9 +4082,12 @@ c
       IF (IWORK(1).GT.0) THEN
          LW = ME + MA + 5*N
          IF (IWORK(1).LT.LW) THEN
-            WRITE (XERN1, '(I8)') LW
-            CALL xXERMSG ('SLATEC', 'DWNNLS', 'INSUFFICIENT STORAGE ' //            &
-     &         'ALLOCATED FOR WORK(*), NEED LW = ' // XERN1, 2, 1)
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('LSEI: insufficient storage')
+		 
+C            WRITE (XERN1, '(I8)') LW
+C            CALL xXERMSG ('SLATEC', 'DWNNLS', 'INSUFFICIENT STORAGE ' //            &
+C     &         'ALLOCATED FOR WORK(*), NEED LW = ' // XERN1, 2, 1)
             MODE = 2
             RETURN
          ENDIF
@@ -4083,9 +4096,12 @@ c
       IF (IWORK(2).GT.0) THEN
          LIW = ME + MA + N
          IF (IWORK(2).LT.LIW) THEN
-            WRITE (XERN1, '(I8)') LIW
-            CALL xXERMSG ('SLATEC', 'DWNNLS', 'INSUFFICIENT STORAGE ' //            &
-     &         'ALLOCATED FOR IWORK(*), NEED LIW = ' // XERN1, 2, 1)
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('LSEI: insufficient storage')
+		 
+C            WRITE (XERN1, '(I8)') LIW
+C            CALL xXERMSG ('SLATEC', 'DWNNLS', 'INSUFFICIENT STORAGE ' //            &
+C     &         'ALLOCATED FOR IWORK(*), NEED LIW = ' // XERN1, 2, 1)
             MODE = 2
             RETURN
          ENDIF
