@@ -1,3 +1,5 @@
+C two problems with strings solved:
+C "INDEX" in xxerrprn and string comparison in ILAENV
 
 C************************************************************************
 C TRIDIAGONAL MATRIX SOLVERS
@@ -1103,12 +1105,15 @@ C       IF LKNTRL IS POSITIVE, WRITE THE ERROR NUMBER AND REQUEST A
 C          TRACEBACK.
 C
       IF (LKNTRL .GT. 0) THEN
-         WRITE (TEMP, '(''ERROR NUMBER = '', I8)') NERR
-         DO 10 I=16,22
-            IF (TEMP(I:I) .NE. ' ') GO TO 20
-   10    CONTINUE
+C KARLINE: REMOVED WRITE		 
+         CALL rwarn ('An error occurred')
+
+C	  WRITE (TEMP, '(''ERROR NUMBER = '', I8)') NERR
+C         DO 10 I=16,22
+C            IF (TEMP(I:I) .NE. ' ') GO TO 20
+C   10    CONTINUE
 C
-   20    CALL xXERPRN (' *  ', -1, TEMP(1:15) // TEMP(I:23), 72)
+C   20    CALL xXERPRN (' *  ', -1, TEMP(1:15) // TEMP(I:23), 72)
 C KS         CALL FDUMP
       ENDIF
 C
@@ -1138,14 +1143,15 @@ C
          ENDIF
 C KS      CALL XERSVE (' ', ' ', ' ', -1, 0, 0, KDUMMY)
 C         CALL XERHLT (' ')
-         STOP
+c         STOP
 C
+          call rexit("STOPPED")
       ELSE
 C         CALL XERHLT (MESSG)
 C         WRITE(*,*) MESSG
-          CALL XMESSAGE (MESSG)
+          CALL rexit ("STOPPED")
 
-         STOP
+C         STOP
 C
       ENDIF
       RETURN
@@ -1244,7 +1250,10 @@ C                       LWRAP+1.  THAT IS, THE SENTINEL FALLS EXACTLY
 C                       AT THE END OF A LINE.
 C
       NEXTC = 1
-   50 LPIECE = INDEX(MESSG(NEXTC:LENMSG), NEWLIN)
+
+C KARLINE: The INDEX function triggers a "note" in gfortran, so it is removed
+   50 LPIECE = 1 
+C   50 LPIECE = INDEX(MESSG(NEXTC:LENMSG), NEWLIN)
       IF (LPIECE .EQ. 0) THEN
 C
 C       THERE WAS NO NEW LINE SENTINEL FOUND.
@@ -4033,10 +4042,10 @@ ccccccccccccccccc auxilliary functions ccccccccccccc
          END IF
 ***
 * Comment out this if block if EMIN is ok
-         IF( IWARN ) THEN
-            FIRST = .TRUE.
-            WRITE( 6, FMT = 9999 )LEMIN
-         END IF
+C         IF( IWARN ) THEN
+C            FIRST = .TRUE.
+C            WRITE( 6, FMT = 9999 )LEMIN
+C         END IF
 ***
 *
 *        Assume IEEE arithmetic if we found denormalised  numbers above,
