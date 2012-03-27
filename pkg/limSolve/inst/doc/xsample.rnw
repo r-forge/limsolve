@@ -14,8 +14,8 @@
 \Plainkeywords{linear modeling, underdetermined systems, Markov chain, R}
 
 
-\author{Karel Van den Meersche\\ NIOO-CEME Yerseke, Universiteit Gent \And Karline
-  Soetaert\\NIOO-CEME Yerseke \And Dick Van Oevelen\\NIOO-CEME Yerseke}
+\author{Karel Van den Meersche\\ Universiteit Gent \And Karline
+  Soetaert\\NIOZ Yerseke \And Dick Van Oevelen\\NIOZ Yerseke}
 
 \Plainauthor{Karel Van den Meersche, Karline Soetaert, Dick Van Oevelen} %% comma-separated
 
