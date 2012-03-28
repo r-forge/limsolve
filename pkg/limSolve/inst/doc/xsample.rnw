@@ -43,7 +43,14 @@
 %\VignettePackage{limSolve}
 
 \begin{document}
+\SweaveOpts{engine=R,eps=FALSE}
+\SweaveOpts{keep.source=TRUE}
 
+<<preliminaries,echo=FALSE,results=hide>>=
+library("limSolve")
+options(prompt = "> ")
+
+@
 
 % \begin{frontmatter}
 
