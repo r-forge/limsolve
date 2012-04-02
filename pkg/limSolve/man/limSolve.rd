@@ -103,7 +103,6 @@ vignette("xsample")
 
 ## show main package vignette
 vignette("limSolve")
-browseURL(paste(system.file(package="limSolve"), "/doc", sep=""))
 }
 }
 
