@@ -1,12 +1,13 @@
 Package: limSolve
-Version: 1.5.3
-Date: 2012-04-01
+Version: 1.5.4
+Date: 2013-06-01
 Title: Solving Linear Inverse Models
 Author: Karline Soetaert <karline.soetaert@nioz.nl>,
-  Karel Van den Meersche <k.vdMeersche@nioo.knaw.nl>,
+  Karel Van den Meersche ,
   Dick van Oevelen <dick.vanoevelen@nioz.nl>
 Maintainer: Karline Soetaert <karline.soetaert@nioz.nl>
-Depends: R (>= 2.10), quadprog, lpSolve, MASS
+Depends: R (>= 2.10)
+Imports: quadprog, lpSolve, MASS
 Description: Functions that (1.) Find the minimum/maximum of a linear or quadratic function:
   min or max (f(x)), where f(x) = ||Ax-b||^2 or f(x) = sum(ai*xi)
   subject to equality constraints Ex=f and/or inequality constraints Gx>=h.
