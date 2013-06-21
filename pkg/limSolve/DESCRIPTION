@@ -14,6 +14,7 @@ Description: Functions that (1.) Find the minimum/maximum of a linear or quadrat
   (2.) Sample an underdetermined- or overdetermined system Ex=f subject to Gx>=h, and if applicable Ax~=b.      
   (3.) Solve a linear system Ax=B for the unknown x. Includes banded and tridiagonal linear systems. 
   The package calls Fortran functions from LINPACK
-License: GPL | file LICENCE
+License: GPL 
+Copyright: inst/COPYRIGHTS
 LazyData: yes
 Packaged: Mon Apr 14 09:09:25 2008; karlines
