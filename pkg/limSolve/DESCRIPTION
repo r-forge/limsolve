@@ -7,7 +7,7 @@ Authors@R: c(person("Karline","Soetaert", role = c("aut","cre"),
              person("Karel","Van den Meersche", role = "aut"),
              person("Dick","van Oevelen", role = "aut", 
                      email = "dick.vanoevelen@nioz.nl"),
-             person("LAPACK authors"))
+             person("LAPACK authors", role = "cph"))
 Author: Karline Soetaert and Karel Van den Meersche and Dick van Oevelen
 Maintainer: Karline Soetaert <karline.soetaert@nioz.nl>
 Depends: R (>= 2.10)
