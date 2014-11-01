@@ -1,7 +1,11 @@
 Package: limSolve
 Version: 1.5.5.1
-Date: 2013-07-01
+Date: 2014-11-01
 Title: Solving Linear Inverse Models
+Author: Karline Soetaert [aut, cre],  
+        Karel Van den Meersche [aut],  
+        Dick van Oevelen [aut], 
+        LAPACK authors [cph]
 Authors@R: c(person("Karline","Soetaert", role = c("aut","cre"), 
                      email = "karline.soetaert@nioz.nl"),
              person("Karel","Van den Meersche", role = "aut"),
