@@ -126,8 +126,7 @@ mtext(side = 3, cex = 1.5, outer = TRUE, line = -1.5,
 }
 
 \references{
-  \url{http://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis
-}
+originated from the urlhttp://gcrg.ucsd.edu/Downloads/Flux_Balance_Analysis
 
 Edwards,J.S., Covert, M., and Palsson, B., (2002)
 Metabolic Modeling of Microbes: the Flux Balance Approach,
