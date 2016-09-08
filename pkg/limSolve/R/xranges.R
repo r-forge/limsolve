@@ -83,6 +83,7 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
         if (Sol$residualNorm > tol)  {
 
       warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
+      colnames(Range) <- c("min", "max")
       return(Range)
       }
     }
