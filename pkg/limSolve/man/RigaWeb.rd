@@ -77,10 +77,8 @@ min(G\%*\%X - H)
 xs  <- xsample(E = E, F = F, G = G, H = H,
                iter = 10000, out = 1000, type = "rda", x0 = X)$X
 # better convergence using 50000 iterations, but this takes a while
-\dontrun{
 xs  <- xsample(E = E, F = F, G = G, H = H,
                iter = 50000, out = 1000, type = "rda", x0 = X)$X
-}
 
 pairs(xs, pch = ".", cex = 2, gap = 0, upper.panel = NULL)
 
