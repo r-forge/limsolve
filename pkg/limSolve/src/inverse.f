@@ -707,7 +707,12 @@ C
          ZZ(IP)=ZZ(IP)/A(IP,JJ)    
       ENDDO
 C
-      go to (200, 320), RTNKEY
+      IF (RTNKEY .EQ. 1) THEN
+        GOTO 200
+      ELSE IF (RTNKEY .EQ. 2) THEN
+        GOTO 320
+      ENDIF    
+C      go to (200, 320), RTNKEY
       END SUBROUTINE xNNLS
 
 
@@ -1985,7 +1990,7 @@ c KARLINE:
      &   MAPKE1, MDEQC, MEND, MEP1, N1, N2, NEXT, NLINK, NOPT, NP1,                &
      &   NTIMES
       LOGICAL COV, FIRST
-      CHARACTER*8 XERN1, XERN2, XERN3, XERN4
+      CHARACTER(LEN=8) XERN1, XERN2, XERN3, XERN4
       SAVE FIRST, DRELPR
 c
       DATA FIRST /.TRUE./
@@ -4074,7 +4079,7 @@ c***END PROLOGUE  DWNNLS
       INTEGER IWORK(*), L, L1, L2, L3, L4, L5, LIW, LW, MA, MDW, ME,                &
      &     MODE, N
       DOUBLE PRECISION  PRGOPT(*), RNORM, W(MDW,*), WORK(*), X(*)
-      CHARACTER*8 XERN1
+      CHARACTER(LEN=8) XERN1
 c***FIRST EXECUTABLE STATEMENT  DWNNLS
       MODE = 0
       IF (MA+ME.LE.0 .OR. N.LE.0) RETURN
@@ -4168,7 +4173,14 @@ c
           IF(.NOT.(INCX.EQ.INCY.AND. INCX .GT.0)) GO TO 70
 c
                NSTEPS=N*INCX
-               IF(DFLAG) 50,10,30
+               IF (DFLAG .LT. 0) THEN
+                 GOTO 50
+               ELSE IF (DFLAG .EQ. 0) THEN
+                 GOTO 10
+               ELSE
+                 GOTO 30
+               ENDIF                    
+C               IF(DFLAG) 50,10,30
    10          CONTINUE
                DH12=DPARAM(4)
                DH21=DPARAM(3)
@@ -4207,7 +4219,15 @@ c
           IF(INCX .LT. 0) KX=1+(1-N)*INCX
           IF(INCY .LT. 0) KY=1+(1-N)*INCY
 c
-          IF(DFLAG)120,80,100
+          IF (DFLAG .LT. 0) THEN
+             GOTO 120
+          ELSE IF (DFLAG .EQ. 0) THEN
+             GOTO 80
+          ELSE
+             GOTO 100
+          ENDIF                    
+
+C          IF(DFLAG)120,80,100
    80     CONTINUE
           DH12=DPARAM(4)
           DH21=DPARAM(3)
@@ -4425,7 +4445,15 @@ c              FIX-H..
                DH22=DH22*GAM
           GO TO 200
   220 CONTINUE
-          IF(DFLAG)250,230,240
+          IF (DFLAG .LT. 0) THEN
+             GOTO 250
+          ELSE IF (DFLAG .EQ. 0) THEN
+             GOTO 230
+          ELSE
+             GOTO 240
+          ENDIF                    
+
+C          IF(DFLAG)250,230,240
   230     CONTINUE
                DPARAM(3)=DH21
                DPARAM(4)=DH12
