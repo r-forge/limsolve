@@ -67,7 +67,15 @@ ldei(E, F, G = NULL, H = NULL,
 \author{
   Karline Soetaert <karline.soetaert@nioz.nl>.
 }
-
+\note{
+One of the steps in the ldei algorithm is the creation of an orthogonal basis, 
+constructed by Singular Value Decomposition. As this makes use of random numbers, 
+it may happen - for problems that are difficult to solve -
+that ldei sometimes finds a solution or fails to find one for the same problem,
+depending on the random numbers used to create the orthogonal basis. 
+If it is suspected that this is happening, trying a few times may find a solution.
+(example RigaWeb is such a problem).
+}
 \examples{
 #-------------------------------------------------------------------------------
 # A simple problem
