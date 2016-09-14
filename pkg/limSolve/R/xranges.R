@@ -79,7 +79,7 @@ xranges  <-  function (E = NULL, F = NULL, G = NULL, H = NULL,
     ## First test if problem is solvable...
     Sol <- lsei(E=E,F=F,G=G,H=H)
     if (Sol$residualNorm > tol)  {
-      Sol <- ldei(E=E,F=F,G=G,H=H)
+      Sol <- linp(E=E,F=F,G=G,H=H,Cost=rep(1, Nx))
         if (Sol$residualNorm > tol)  {
 
       warning (paste("cannot proceed: problem not solvable at requested tolerance",tol))
