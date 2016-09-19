@@ -62,6 +62,8 @@ ldei(E, F, G = NULL, H = NULL,
   \item{type }{the string "ldei", such that how the solution was obtained
     can be traced.
   }
+  \item{numiter }{the number of iterations.
+  }
 }
 
 \author{
