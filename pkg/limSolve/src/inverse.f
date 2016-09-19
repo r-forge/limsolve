@@ -8,7 +8,7 @@ C LEAST DISTANCE SUBROUTINE
 C*********************************************************************
 
       SUBROUTINE ldp(G,H,NUnknowns,NConstraints,NW,X,XNorm,W,xIndex,           &
-     &               Mode,verbose, IsError)
+     &               Mode,verbose, IsError, Iter)
 
 
       INTEGER           :: NUnknowns,NConstraints,NW
@@ -22,7 +22,7 @@ C*********************************************************************
 
       DOUBLE PRECISION  :: W(NW)
       INTEGER           :: xIndex(NConstraints)
-      INTEGER           :: Mode
+      INTEGER           :: Mode, Iter
       INTEGER :: xLDPSucces,xLDPNoUnknownsOrEquations,                         &
      &       xLDPToomanyIterations,xLDPIncompatibleConstraints,                &
      &       xLDPUnsolvable
@@ -34,7 +34,7 @@ C*********************************************************************
 
 
       CALL xLDP(G,NConstraints,NConstraints,NUnknowns,H,X,Xnorm,W,             &
-     &          xINdex,Mode)
+     &          xINdex,Mode,Iter)
 
       IsError=.TRUE.
       if (mode == xLDPSucces) IsError = .FALSE.
@@ -237,7 +237,7 @@ C LEAST DISTANCE SUBROUTINE
 C*************************************************************************C
 
 
-      SUBROUTINE xLDP (G,MDG,M,N,H,X,XNORM,W,xINDEX,MODE)     
+      SUBROUTINE xLDP (G,MDG,M,N,H,X,XNORM,W,xINDEX,MODE,ITER)     
 C
 C  Algorithm LDP: LEAST DISTANCE PROGRAMMING
 C
@@ -246,6 +246,7 @@ C  Charles L. Lawson and Richard J. Hanson at Jet Propulsion Laboratory
 C  1974 MAR 1, and published in the book
 C  "SOLVING LEAST SQUARES PROBLEMS", Prentice-HalL, 1974.
 C  Revised FEB 1995 to accompany reprinting of the book by SIAM.
+C Karline: added ITER
 C     ------------------------------------------------------------------
 
       IMPLICIT NONE
@@ -259,7 +260,7 @@ C     ------------------------------------------------------------------
 C Number of unknowns
       INTEGER  :: M, MDG,N         
 C Succes or failure
-      INTEGER  :: MODE             
+      INTEGER  :: MODE, ITER             
       INTEGER  :: xINDEX(*)  
 C Constraints G*X>H ; W=workarray; xnorm=residual norm
       DOUBLE PRECISION :: G(MDG,*), H(*), X(*)
@@ -322,7 +323,7 @@ C
       IWDUAL=IY+M   
 C   
       CALL xNNLS (W,NP1,NP1,M,W(JF),W(IY),RNORM,W(IWDUAL),W(IZ),         &
-     &  xINDEX,MODE)  
+     &  xINDEX,MODE,ITER)  
 C                      USE THE FOLLOWING RETURN IF UNSUCCESSFUL IN NNLS.
       IF (MODE.NE.xLDPSucces) RETURN 
 
@@ -373,7 +374,7 @@ C                               HERE WE ARE USING THE SOLUTION VECTOR Y.
 
 C*************************************************************************C
 
-C     SUBROUTINE NNLS  (A,MDA,M,N,B,X,RNORM,W,ZZ,INDEX,MODE)
+C     SUBROUTINE NNLS  (A,MDA,M,N,B,X,RNORM,W,ZZ,INDEX,MODE,ITER)
 C   
 C  Algorithm NNLS: NONNEGATIVE LEAST SQUARES
 C   
@@ -382,7 +383,7 @@ C  Charles L. Lawson and Richard J. Hanson at Jet Propulsion Laboratory
 C  1973 JUN 15, and published in the book
 C  "SOLVING LEAST SQUARES PROBLEMS", Prentice-HalL, 1974.
 C  Revised FEB 1995 to accompany reprinting of the book by SIAM.
-C
+C  Karline:added iter as a request by Judy Wang
 C     GIVEN AN M BY N MATRIX, A, AND AN M-VECTOR, B,  COMPUTE AN
 C     N-VECTOR, X, THAT SOLVES THE LEAST SQUARES PROBLEM   
 C   
@@ -422,7 +423,7 @@ C                   EITHER M .LE. 0 OR N .LE. 0.
 C             3    ITERATION COUNT EXCEEDED.  MORE THAN 3*N ITERATIONS. 
 C   
 C     ------------------------------------------------------------------
-      SUBROUTINE xnnls (A,MDA,M,N,B,X,RNORM,W,ZZ,INDEX,MODE) 
+      SUBROUTINE xnnls (A,MDA,M,N,B,X,RNORM,W,ZZ,INDEX,MODE,ITER) 
 C     ------------------------------------------------------------------
       integer I, II, IP, ITER, ITMAX, IZ, IZ1, IZ2, IZMAX, J, JJ, JZ, L
       integer M, MDA, MODE,N, NPP1, NSETP, RTNKEY
