@@ -1,6 +1,5 @@
 Package: limSolve
 Version: 1.5.5.2
-Date: 2016-08-25
 Title: Solving Linear Inverse Models
 Author: Karline Soetaert [aut, cre],  
         Karel Van den Meersche [aut],  
