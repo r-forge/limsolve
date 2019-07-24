@@ -16,10 +16,10 @@ void F77_NAME(xnnls)(double*, int*, int*, int*, double*,
 void F77_NAME(dgbsv)(int*, int*, int*, int*, double*, int*,
       int*, double*, int*, int*);
 
-void F77_NAME(block)(int*, double*, int*, int*, double*, 
-      int*, int*, int*, double*, int*, int*, double*,
-      double*, double*, double*, int*, double*, double*);
-                    
+void F77_NAME(block)(int*, double*, int*, int*, double*, int*, 
+      int*, int*, double*, int*, int*, int*,
+      int*, double*, double*, int*, double*, double*);
+	  
 void F77_NAME(dgtsv)(int*, int*, double*,
       double*, double*, double*, int*, int*);
           
