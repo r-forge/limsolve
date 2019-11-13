@@ -3,6 +3,7 @@
 #  include <R.h>
 #endif
 
+
 void F77_NAME(ldp)(double*, double*, int*, int*, int*,  double*, 
       double*, double*, double*, int*, int*, int*, int*);
      

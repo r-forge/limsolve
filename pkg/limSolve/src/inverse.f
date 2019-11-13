@@ -1,6 +1,6 @@
 C Karline: removed the write statement; where they also passed an integer value, 
 C this no long is the case. Each removed statement is preceded by:
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
 
 
 C*********************************************************************
@@ -34,10 +34,10 @@ C*********************************************************************
 
 
       IsError = .FALSE.
-	  IF (IsErrorInt > 0) IsError = .TRUE.
+      IF (IsErrorInt > 0) IsError = .TRUE.
 
       verbose = .FALSE.
-	  IF (verboseInt > 0) verbose = .TRUE.
+      IF (verboseInt > 0) verbose = .TRUE.
 
       CALL xLDP(G,NConstraints,NConstraints,NUnknowns,H,X,Xnorm,W,             &
      &          xINdex,Mode,Iter)
@@ -114,10 +114,10 @@ C    E*x=F, G*X>H
 C    x> 0
 C---------------------------------------------------------------------
       IsError = .FALSE.
-	  IF (IsErrorInt > 0) IsError = .TRUE.
+      IF (IsErrorInt > 0) IsError = .TRUE.
 
       verbose = .FALSE.
-	  IF (verboseInt > 0) verbose = .TRUE.
+      IF (verboseInt > 0) verbose = .TRUE.
 
       N  = NUnknowns
       ME = NEquations
@@ -2024,7 +2024,7 @@ c         WRITE (XERN1, '(I8)') N
 c         WRITE (XERN2, '(I8)') ME
 c         WRITE (XERN3, '(I8)') MA
 c         WRITE (XERN4, '(I8)') MG
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
          CALL rwarn ('LSEI: THE VARIABLES N, ME,MA, MG MUST BE>0')
 c         CALL xXERMSG ('SLATEC', 'LSEI', 'ALL OF THE VARIABLES N, ME,'//            &
 c     &      ' MA, MG MUST BE .GE. 0 ENTERED ROUTINE WITH' //                        &
@@ -2038,7 +2038,7 @@ c
       IF (IP(1).GT.0) THEN
          LCHK = 2*(ME+N) + MAX(MA+MG,N) + (MG+2)*(N+7)
          IF (IP(1).LT.LCHK) THEN
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
          CALL rwarn ('LSEI: insufficient storage')
 c            WRITE (XERN1, '(I8)') LCHK
 c            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
@@ -2050,7 +2050,7 @@ c
       IF (IP(2).GT.0) THEN
          LCHK = MG + 2*N + 2
          IF (IP(2).LT.LCHK) THEN
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
          CALL rwarn ('LSEI: insufficient storage')
 c            WRITE (XERN1, '(I8)') LCHK
 c            CALL xXERMSG ('SLATEC', 'xDLSEI', 'INSUFFICIENT STORAGE ' //             &
@@ -4100,7 +4100,7 @@ c
       IF (IWORK(1).GT.0) THEN
          LW = ME + MA + 5*N
          IF (IWORK(1).LT.LW) THEN
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
          CALL rwarn ('LSEI: insufficient storage')
   
 C            WRITE (XERN1, '(I8)') LW
@@ -4114,7 +4114,7 @@ c
       IF (IWORK(2).GT.0) THEN
          LIW = ME + MA + N
          IF (IWORK(2).LT.LIW) THEN
-C KARLINE: REMOVED WRITE		 
+C KARLINE: REMOVED WRITE         
          CALL rwarn ('LSEI: insufficient storage')
 
 C            WRITE (XERN1, '(I8)') LIW
