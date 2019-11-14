@@ -5,7 +5,7 @@
 
 
 void F77_NAME(ldp)(double*, double*, int*, int*, int*,  double*, 
-      double*, double*, double*, int*, int*, int*, int*);
+      double*, double*, int*, int*, int*, int*, int*);
      
 void F77_NAME(lsei)(int*, int*, int*, int*, double*, double*,
       double*, double*, double*, double*, double*, int*, int*, 
