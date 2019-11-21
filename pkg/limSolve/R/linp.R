@@ -7,7 +7,7 @@
 ##                        G*x>=h
 ##
 ## Note: uses lp from package lpSolve
-## This R-code sometimes fails and terminates R
+## This R-code sometimes fails 
 ##      for very small problems that are repeated frequently...
 ##==============================================================================
 
